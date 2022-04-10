@@ -1,9 +1,11 @@
 package org.zim.client.command.impl;
 
+import com.alibaba.fastjson.JSON;
 import org.zim.client.ClientHandler;
 import org.zim.client.command.InnerCommand;
 import org.zim.common.EchoHelper;
 import org.zim.common.channel.ZimChannel;
+import org.zim.common.model.ClientInfo;
 import org.zim.protocol.CommandResponseType;
 import org.zim.protocol.RemoteCommand;
 import org.zim.protocol.command.RegisterCommand;
@@ -11,6 +13,7 @@ import org.zim.protocol.command.RegisterCommand;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 /**
  * @author zhenxin
@@ -41,6 +44,10 @@ public class RegisterInnerCommand implements InnerCommand {
     @Override
     public int handleCommandResponse(RemoteCommand response) throws IOException {
         if (response.getCode() == CommandResponseType.REGISTER_OK.getCode()) {
+            String body = new String(response.getBody(), StandardCharsets.UTF_8);
+            List<ClientInfo> clientInfos = JSON.parseArray(body, ClientInfo.class);
+
+            ClientHandler.getInstance().updateOnlineUser(clientInfos);
             EchoHelper.printSystem("online success! username is [" + registerCommand.getUserName() + "], welcome to zim!");
             return 0;
         } else {

@@ -4,6 +4,9 @@ package org.zim.server.common.service;
 import org.zim.common.EchoHelper;
 import org.zim.common.channel.ZimChannel;
 import org.zim.common.channel.ZimChannelListener;
+import org.zim.protocol.CommandResponseType;
+import org.zim.protocol.MessageConstants;
+import org.zim.protocol.RemoteCommand;
 import org.zim.server.common.model.ServerClientInfo;
 
 import java.util.ArrayList;
@@ -22,20 +25,17 @@ public class AccountService {
     private final Map<String, ServerClientInfo> userName2UserIdMap = new ConcurrentHashMap<>();
     private final Map<ZimChannel, ServerClientInfo> channelClientInfoMap = new ConcurrentHashMap<>();
 
-    public boolean register(Long userId, String userName, ZimChannel zimChannel) {
-        if (userId2UserNameMap.containsKey(userId) || userName2UserIdMap.containsKey(userName)) {
+    public boolean register(ServerClientInfo serverClientInfo) {
+        if (userId2UserNameMap.containsKey(serverClientInfo.getUserId())
+                || userName2UserIdMap.containsKey(serverClientInfo.getUserName())) {
             return false;
         }
-        ServerClientInfo serverClientInfo = new ServerClientInfo();
-        serverClientInfo.setUserId(userId);
-        serverClientInfo.setUserName(userName);
-        serverClientInfo.setZimChannel(zimChannel);
 
-        userId2UserNameMap.put(userId, serverClientInfo);
-        userName2UserIdMap.put(userName, serverClientInfo);
-        channelClientInfoMap.put(zimChannel, serverClientInfo);
+        userId2UserNameMap.put(serverClientInfo.getUserId(), serverClientInfo);
+        userName2UserIdMap.put(serverClientInfo.getUserName(), serverClientInfo);
+        channelClientInfoMap.put(serverClientInfo.getZimChannel(), serverClientInfo);
 
-        zimChannel.registerListener(new ZimChannelListener() {
+        serverClientInfo.getZimChannel().registerListener(new ZimChannelListener() {
             @Override
             public void onClose(ZimChannel zimChannel) {
                 ServerClientInfo info = channelClientInfoMap.get(zimChannel);
@@ -56,6 +56,19 @@ public class AccountService {
             list.add(entry.getValue());
         }
         return list;
+    }
+
+    public void broadcastOnline(ServerClientInfo clientInfo) {
+        RemoteCommand remoteCommand = RemoteCommand.createResponseCommand(CommandResponseType.REGISTER_BROADCAST);
+        remoteCommand.putExtendField(MessageConstants.TO, Long.toString(clientInfo.getUserId()));
+        remoteCommand.putExtendField(MessageConstants.TO_NAME, clientInfo.getUserName());
+
+        List<ServerClientInfo> infos = queryAllUser();
+        for (ServerClientInfo info : infos) {
+            if (!info.getUserId().equals(clientInfo.getUserId())) {
+                info.getZimChannel().write(remoteCommand.encode());
+            }
+        }
     }
 
     public ServerClientInfo queryById(Long userId) {

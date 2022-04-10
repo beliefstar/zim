@@ -19,6 +19,7 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ClientHandler {
 
@@ -157,17 +158,21 @@ public class ClientHandler {
             MessageHandler.handle(command);
             return;
         }
+        if (command.getCode() == CommandResponseType.REGISTER_BROADCAST.getCode()) {
+            MessageHandler.handleOnlineNotice(command);
+            return;
+        }
         if (Command.CURRENT_COMMAND != null) {
             Command.CURRENT_COMMAND.handleCommandResponse(command);
         }
     }
 
     public void updateOnlineUser(List<ClientInfo> list) {
-        Map<String, ClientInfo> map = new HashMap<>();
+        Map<String, ClientInfo> map = new ConcurrentHashMap<>();
         for (ClientInfo info : list) {
             map.put(info.getUserName(), info);
         }
-        onlineClientInfoMap = Collections.unmodifiableMap(map);
+        onlineClientInfoMap = map;
     }
 
     public Long getUserId() {

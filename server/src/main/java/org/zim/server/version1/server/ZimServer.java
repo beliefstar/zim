@@ -28,7 +28,7 @@ public class ZimServer {
     private final ServerSocketChannel ssc;
 
     private Thread mainSelectorThread;
-    private ZimServerHandler serverHandler = new ZimServerHandler();
+    private final ZimServerHandler serverHandler = new ZimServerHandler();
 
     public ZimServer() throws IOException {
         ssc = ServerSocketChannel.open();

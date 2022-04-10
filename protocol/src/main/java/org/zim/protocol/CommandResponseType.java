@@ -14,6 +14,8 @@ public enum CommandResponseType {
 
     REGISTER_ERROR((short) 11),
 
+    REGISTER_BROADCAST((short) 12),
+
     PRIVATE_CHAT_MSG_SEND_OK((short) 30),
 
     PRIVATE_CHAT_MSG_OK((short) 31),
