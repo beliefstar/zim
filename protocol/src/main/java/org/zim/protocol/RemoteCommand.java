@@ -37,7 +37,7 @@ public class RemoteCommand {
 
 
     public static RemoteCommand createResponseCommand() {
-        return createResponseCommand(CommandResponseType.OK);
+        return createResponseCommand(CommandResponseType.ERROR);
     }
 
     public static RemoteCommand createResponseCommand(CommandResponseType responseType) {
@@ -58,7 +58,10 @@ public class RemoteCommand {
         int bodyLength = body == null ? 0 : body.length;
 
         byte[] extendFieldsBytes = encodeExtendFields(extendFields);
-        ByteBuffer buffer = ByteBuffer.allocate(4 + 1 + 2 + 4 + extendFieldsBytes.length + 4 + bodyLength);
+
+        int length = 4 + 1 + 2 + 4 + extendFieldsBytes.length + 4 + bodyLength;
+        ByteBuffer buffer = ByteBuffer.allocate(4 + length);
+        buffer.putInt(length);
         buffer.putInt(MAGIC_NUMBER);
         buffer.put(flag);
         buffer.putShort(code);

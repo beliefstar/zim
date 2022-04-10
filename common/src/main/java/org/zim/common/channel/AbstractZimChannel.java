@@ -1,6 +1,5 @@
-package org.zim.server.common.channel;
+package org.zim.common.channel;
 
-import java.nio.ByteBuffer;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
@@ -12,26 +11,32 @@ public abstract class AbstractZimChannel implements ZimChannel {
 
     private final ConcurrentLinkedQueue<ZimChannelListener> listeners = new ConcurrentLinkedQueue<>();
 
+    protected volatile int state = 0;
+
     @Override
     public void registerListener(ZimChannelListener channelListener) {
         listeners.offer(channelListener);
-    }
-
-    public void triggerOnRead(ByteBuffer buffer, int readSize) {
-        for (ZimChannelListener listener : listeners) {
-            listener.onRead(buffer, readSize);
-        }
-    }
-
-    public void triggerOnWrite(ByteBuffer buffer) {
-        for (ZimChannelListener listener : listeners) {
-            listener.onWrite(buffer);
-        }
     }
 
     public void triggerOnClose(ZimChannel channel) {
         for (ZimChannelListener listener : listeners) {
             listener.onClose(channel);
         }
+    }
+
+    public boolean isReadState() {
+        return state == ZimChannel.READ_STATE;
+    }
+
+    public boolean isWriteState() {
+        return state == ZimChannel.WRITE_STATE;
+    }
+
+    public void markReadState() {
+        state = ZimChannel.READ_STATE;
+    }
+
+    public void markWriteState() {
+        state = ZimChannel.WRITE_STATE;
     }
 }

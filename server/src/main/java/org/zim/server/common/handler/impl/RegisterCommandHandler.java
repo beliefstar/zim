@@ -1,12 +1,12 @@
 package org.zim.server.common.handler.impl;
 
 
+import org.zim.common.EchoHelper;
+import org.zim.common.channel.ZimChannel;
 import org.zim.protocol.CommandResponseType;
 import org.zim.protocol.RemoteCommand;
 import org.zim.protocol.command.RegisterCommand;
 import org.zim.server.common.CommandProcessor;
-import org.zim.server.common.EchoHelper;
-import org.zim.server.common.channel.ZimChannel;
 import org.zim.server.common.handler.AbstractCommandHandler;
 import org.zim.server.common.service.AccountService;
 
@@ -27,7 +27,7 @@ public class RegisterCommandHandler extends AbstractCommandHandler {
         AccountService accountService = commandProcessor.getAccountService();
         if (accountService.register(registerCommand.getUserId(), registerCommand.getUserName(), channel)) {
             EchoHelper.print("user [{}] online", registerCommand.getUserName());
-            return RemoteCommand.createResponseCommand(CommandResponseType.OK);
+            return RemoteCommand.createResponseCommand(CommandResponseType.REGISTER_OK);
         }
         return RemoteCommand.createResponseCommand(CommandResponseType.ERROR, "user exist");
     }

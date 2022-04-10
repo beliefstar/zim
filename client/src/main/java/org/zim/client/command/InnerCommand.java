@@ -1,7 +1,9 @@
 package org.zim.client.command;
 
+import org.zim.common.channel.ZimChannel;
+import org.zim.protocol.RemoteCommand;
+
 import java.io.IOException;
-import java.nio.channels.SocketChannel;
 
 /**
  * @author zhenxin
@@ -10,5 +12,7 @@ import java.nio.channels.SocketChannel;
  */
 public interface InnerCommand {
 
-    int handleCommand(String parameter, SocketChannel sc) throws IOException;
+    int handleCommand(String parameter, ZimChannel channel) throws IOException;
+
+    int handleCommandResponse(RemoteCommand response) throws IOException;
 }

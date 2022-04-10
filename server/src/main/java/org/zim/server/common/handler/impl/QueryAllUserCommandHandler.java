@@ -1,10 +1,11 @@
 package org.zim.server.common.handler.impl;
 
 import com.alibaba.fastjson.JSON;
+import org.zim.common.channel.ZimChannel;
+import org.zim.protocol.CommandResponseType;
 import org.zim.protocol.RemoteCommand;
 import org.zim.protocol.command.RegisterCommand;
 import org.zim.server.common.CommandProcessor;
-import org.zim.server.common.channel.ZimChannel;
 import org.zim.server.common.handler.AbstractCommandHandler;
 
 import java.nio.charset.StandardCharsets;
@@ -24,7 +25,7 @@ public class QueryAllUserCommandHandler extends AbstractCommandHandler {
     @Override
     public RemoteCommand handleCommand(RemoteCommand command, ZimChannel channel) {
         List<String> list = commandProcessor.getAccountService().queryAllUser();
-        RemoteCommand response = RegisterCommand.createResponseCommand();
+        RemoteCommand response = RegisterCommand.createResponseCommand(CommandResponseType.QUERY_ALL_OK);
         response.setBody(JSON.toJSONString(list).getBytes(StandardCharsets.UTF_8));
         return response;
     }

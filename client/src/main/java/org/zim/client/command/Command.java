@@ -10,6 +10,8 @@ import lombok.Data;
 @Data
 public class Command {
 
+    public static InnerCommand CURRENT_COMMAND;
+
     private String name;
 
     private String parameter;

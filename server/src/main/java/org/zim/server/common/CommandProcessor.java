@@ -1,11 +1,12 @@
 package org.zim.server.common;
 
 
+import org.zim.common.channel.ZimChannel;
 import org.zim.protocol.CommandRequestType;
 import org.zim.protocol.CommandResponseType;
 import org.zim.protocol.RemoteCommand;
-import org.zim.server.common.channel.ZimChannel;
 import org.zim.server.common.handler.CommandHandler;
+import org.zim.server.common.handler.impl.EchoCommandHandler;
 import org.zim.server.common.handler.impl.QueryAllUserCommandHandler;
 import org.zim.server.common.handler.impl.RegisterCommandHandler;
 import org.zim.server.common.service.AccountService;
@@ -31,6 +32,7 @@ public class CommandProcessor {
     private void init() {
         COMMAND_HANDLER_MAP.put(CommandRequestType.REGISTER.getCode(), new RegisterCommandHandler(this));
         COMMAND_HANDLER_MAP.put(CommandRequestType.QUERY_ALL_USER.getCode(), new QueryAllUserCommandHandler(this));
+        COMMAND_HANDLER_MAP.put(CommandRequestType.ECHO.getCode(), new EchoCommandHandler(this));
     }
 
     public void process(RemoteCommand remoteCommand, ZimChannel zimChannel) {

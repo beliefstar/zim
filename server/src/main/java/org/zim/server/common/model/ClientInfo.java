@@ -1,7 +1,7 @@
 package org.zim.server.common.model;
 
 import lombok.Data;
-import org.zim.server.common.channel.ZimChannel;
+import org.zim.common.channel.ZimChannel;
 
 /**
  * @author zhenxin

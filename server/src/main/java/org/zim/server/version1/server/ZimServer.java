@@ -1,6 +1,9 @@
 package org.zim.server.version1.server;
 
 
+import org.zim.common.EchoHelper;
+import org.zim.common.channel.ZimChannel;
+import org.zim.common.channel.impl.ZimChannelImpl;
 import org.zim.server.common.Constants;
 
 import java.io.IOException;
@@ -19,7 +22,6 @@ import java.util.Iterator;
 public class ZimServer {
 
     private final Selector mainSelector;
-    private final Selector childSelector;
     private final ServerSocketChannel ssc;
 
     private Thread mainSelectorThread;
@@ -31,7 +33,6 @@ public class ZimServer {
         ssc.configureBlocking(false);
 
         mainSelector = Selector.open();
-        childSelector = Selector.open();
         ssc.register(mainSelector, SelectionKey.OP_ACCEPT);
     }
 
@@ -40,24 +41,16 @@ public class ZimServer {
             try {
                 this.mainSelectLoop();
             } catch (Exception e) {
-                System.out.println("zim server: main select loop error!!!");
+                EchoHelper.print("zim server: main select loop error!!!");
                 e.printStackTrace();
             }
         });
 
         mainSelectorThread.start();
-
-//        new Thread(() -> {
-//            try {
-//                this.childSelectLoop();
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
-//        }).start();
     }
 
     private void mainSelectLoop() throws Exception {
-        System.out.println("zim server: waiting accept...");
+        EchoHelper.print("zim server: waiting accept...");
         while (true) {
             int select = mainSelector.select(5000);
             if (select == 0) {
@@ -69,42 +62,28 @@ public class ZimServer {
                 if (key.isAcceptable()) {
                     SocketChannel socketChannel = ssc.accept();
                     if (socketChannel != null) {
-                        System.out.println("zim server: [main select] accept: " + socketChannel.getRemoteAddress().toString());
+                        EchoHelper.print("zim server: [main select] accept: {}", socketChannel.getRemoteAddress().toString());
                         socketChannel.configureBlocking(false);
-                        socketChannel.register(mainSelector, SelectionKey.OP_READ);
+                        SelectionKey selectionKey = socketChannel.register(mainSelector, SelectionKey.OP_READ | SelectionKey.OP_WRITE);
+                        ZimChannelImpl zimChannel = new ZimChannelImpl(socketChannel);
+                        selectionKey.attach(zimChannel);
                     }
                 }
-                if (key.isReadable()) {
-                    SocketChannel channel = (SocketChannel) key.channel();
+                if (key.isValid() && key.isReadable()) {
+                    ZimChannel zimChannel = (ZimChannel) key.attachment();
                     try {
-                        serverHandler.handleRead(channel);
+                        serverHandler.handleRead(zimChannel);
                     } catch (Exception e) {
-                        e.printStackTrace();
                         key.cancel();
-                        channel.close();
+                        zimChannel.close();
                     }
                 }
-                iterator.remove();
-            }
-        }
-    }
-
-    private void childSelectLoop() throws Exception {
-        while (true) {
-            int select = childSelector.select(5000);
-            if (select == 0) {
-                continue;
-            }
-            Iterator<SelectionKey> iterator = childSelector.selectedKeys().iterator();
-            while (iterator.hasNext()) {
-                SelectionKey key = iterator.next();
-                if (key.isReadable()) {
-                    SocketChannel channel = (SocketChannel) key.channel();
-                    serverHandler.handleRead(channel);
+                if (key.isValid() && key.isWritable()) {
+                    ZimChannel zimChannel = (ZimChannel) key.attachment();
+                    zimChannel.writeRemaining();
                 }
                 iterator.remove();
             }
         }
     }
-
 }

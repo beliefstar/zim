@@ -1,6 +1,5 @@
-package org.zim.server.common.channel;
+package org.zim.common.channel;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 
 /**
@@ -10,11 +9,16 @@ import java.nio.ByteBuffer;
  */
 public interface ZimChannel {
 
-    int read(ByteBuffer buffer) throws IOException;
+    int READ_STATE = 1;
+    int WRITE_STATE = 2;
+
+    ByteBuffer read() throws Exception;
 
     void write(byte[] data);
 
     void write(ByteBuffer buffer);
+
+    void writeRemaining();
 
     void close();
 

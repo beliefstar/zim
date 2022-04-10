@@ -1,6 +1,4 @@
-package org.zim.server.common.channel;
-
-import java.nio.ByteBuffer;
+package org.zim.common.channel;
 
 /**
  * @author zhenxin
@@ -8,10 +6,6 @@ import java.nio.ByteBuffer;
  * @date 2022/4/8 18:19
  */
 public interface ZimChannelListener {
-
-    default void onRead(ByteBuffer buffer, int readSize) {}
-
-    default void onWrite(ByteBuffer buffer) {}
 
     default void onClose(ZimChannel zimChannel) {}
 }

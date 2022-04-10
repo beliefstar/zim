@@ -1,11 +1,12 @@
 package org.zim.client.command;
 
 import lombok.Getter;
-import org.zhenxin.zim.client.EchoHelper;
-import org.zhenxin.zim.client.command.impl.QueryAllUserCommand;
+import org.zim.client.command.impl.EchoCommand;
+import org.zim.client.command.impl.QueryAllUserCommand;
+import org.zim.common.EchoHelper;
+import org.zim.common.channel.ZimChannel;
 
 import java.io.IOException;
-import java.nio.channels.SocketChannel;
 
 /**
  * @author zhenxin
@@ -15,7 +16,8 @@ import java.nio.channels.SocketChannel;
 @Getter
 public enum CommandHelper {
 
-    QUERY_ALL_USER("listu", "查看所有在线用户", new QueryAllUserCommand())
+    QUERY_ALL_USER("listu", "查看所有在线用户", new QueryAllUserCommand()),
+    ECHO          ("echo",  "Echo消息",       new EchoCommand())
     ;
 
     private final String command;
@@ -28,15 +30,16 @@ public enum CommandHelper {
         this.commandHandler = commandHandler;
     }
 
-    public static int fireCommand(String line, SocketChannel sc) {
+    public static int fireCommand(String line, ZimChannel channel) {
         Command command = Command.parse(line);
         InnerCommand innerCommand = chooseCommand(command.getName());
         if (innerCommand == null) {
-            EchoHelper.print("command [{}] not found");
+            EchoHelper.print("command [{}] not found", command.getName());
             return 0;
         }
         try {
-            return innerCommand.handleCommand(command.getParameter(), sc);
+            Command.CURRENT_COMMAND = innerCommand;
+            return innerCommand.handleCommand(command.getParameter(), channel);
         } catch (IOException e) {
             EchoHelper.print("found error: {}", e.getMessage());
             return 0;

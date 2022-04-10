@@ -15,18 +15,23 @@ import java.util.function.Supplier;
 @Getter
 public enum CommandRequestType {
 
-    REGISTER((short) 0, RegisterCommand::new),
+    REGISTER((short) 1, RegisterCommand::new),
 
-    GROUP_CHAT_MESSAGE((short) 1, GroupChatMessageCommand::new),
+    GROUP_CHAT_MESSAGE((short) 2, GroupChatMessageCommand::new),
 
-    PRIVATE_CHAT_MESSAGE((short) 2, PrivateChatMessageCommand::new),
+    PRIVATE_CHAT_MESSAGE((short) 3, PrivateChatMessageCommand::new),
 
-    QUERY_ALL_USER((short) 3, RemoteCommand::new),
+    QUERY_ALL_USER((short) 4),
+
+    ECHO((short) 5),
     ;
 
     private final short code;
     private final Supplier<? extends RemoteCommand> supplier;
 
+    CommandRequestType(short code) {
+        this(code, RemoteCommand::new);
+    }
     CommandRequestType(short code, Supplier<? extends RemoteCommand> supplier) {
         this.code = code;
         this.supplier = supplier;

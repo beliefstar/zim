@@ -10,9 +10,13 @@ import lombok.Getter;
 @Getter
 public enum CommandResponseType {
 
-    OK((short) 0),
+    REGISTER_OK((short) 10),
 
-    ERROR((short) 1)
+    QUERY_ALL_OK((short) 40),
+
+    ECHO_OK((short) 50),
+
+    ERROR((short) 99)
     ;
 
     private final short code;

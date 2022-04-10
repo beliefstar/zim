@@ -1,9 +1,9 @@
 package org.zim.server.common.service;
 
 
-import org.zim.server.common.EchoHelper;
-import org.zim.server.common.channel.ZimChannel;
-import org.zim.server.common.channel.ZimChannelListener;
+import org.zim.common.EchoHelper;
+import org.zim.common.channel.ZimChannel;
+import org.zim.common.channel.ZimChannelListener;
 import org.zim.server.common.model.ClientInfo;
 
 import java.util.ArrayList;
