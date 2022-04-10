@@ -2,12 +2,15 @@ package org.zim.server.version1.server;
 
 
 import org.zim.common.EchoHelper;
+import org.zim.common.channel.UnCompleteException;
 import org.zim.common.channel.ZimChannel;
+import org.zim.common.channel.ZimChannelListener;
 import org.zim.common.channel.impl.ZimChannelImpl;
 import org.zim.server.common.Constants;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
@@ -66,13 +69,20 @@ public class ZimServer {
                         socketChannel.configureBlocking(false);
                         SelectionKey selectionKey = socketChannel.register(mainSelector, SelectionKey.OP_READ | SelectionKey.OP_WRITE);
                         ZimChannelImpl zimChannel = new ZimChannelImpl(socketChannel);
+                        zimChannel.registerListener(new ZimChannelListener() {
+                            @Override
+                            public void onRead(ZimChannel channel, ByteBuffer buffer) throws IOException {
+                                serverHandler.handleRead(buffer, channel);
+                            }
+                        });
                         selectionKey.attach(zimChannel);
                     }
                 }
                 if (key.isValid() && key.isReadable()) {
                     ZimChannel zimChannel = (ZimChannel) key.attachment();
                     try {
-                        serverHandler.handleRead(zimChannel);
+                        zimChannel.read();
+                    } catch (UnCompleteException ignore) {
                     } catch (Exception e) {
                         key.cancel();
                         zimChannel.close();

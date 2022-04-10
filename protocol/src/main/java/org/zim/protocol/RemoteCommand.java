@@ -36,6 +36,14 @@ public class RemoteCommand {
     }
 
 
+    public void markResponse() {
+        flag = RESPONSE_FLAG;
+    }
+
+    public boolean isMessageResponse() {
+        return code == CommandResponseType.PRIVATE_CHAT_MSG_OK.getCode();
+    }
+
     public static RemoteCommand createResponseCommand() {
         return createResponseCommand(CommandResponseType.ERROR);
     }

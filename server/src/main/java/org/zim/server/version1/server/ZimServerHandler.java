@@ -1,11 +1,11 @@
 package org.zim.server.version1.server;
 
 
-import org.zim.common.channel.UnCompleteException;
 import org.zim.common.channel.ZimChannel;
 import org.zim.protocol.RemoteCommand;
 import org.zim.server.common.CommandProcessor;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 
 /**
@@ -17,18 +17,9 @@ public class ZimServerHandler {
 
     private final CommandProcessor commandProcessor = new CommandProcessor();
 
-    public void handleRead(ZimChannel zimChannel) throws Exception {
-        ByteBuffer buffer;
-        try {
-            buffer = zimChannel.read();
-        } catch (UnCompleteException e) {
-            return;
-        } catch (Exception e) {
-            zimChannel.close();
-            return;
-        }
+    public void handleRead(ByteBuffer buffer, ZimChannel channel) throws IOException {
         byte[] bytes = buffer.array();
         RemoteCommand command = RemoteCommand.decode(bytes);
-        commandProcessor.process(command, zimChannel);
+        commandProcessor.process(command, channel);
     }
 }

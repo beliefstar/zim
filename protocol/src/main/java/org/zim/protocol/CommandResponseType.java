@@ -12,6 +12,14 @@ public enum CommandResponseType {
 
     REGISTER_OK((short) 10),
 
+    REGISTER_ERROR((short) 11),
+
+    PRIVATE_CHAT_MSG_SEND_OK((short) 30),
+
+    PRIVATE_CHAT_MSG_OK((short) 31),
+
+    PRIVATE_CHAT_MSG_USER_NOT_FOUND((short) 32),
+
     QUERY_ALL_OK((short) 40),
 
     ECHO_OK((short) 50),

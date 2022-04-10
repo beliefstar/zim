@@ -2,6 +2,8 @@ package org.zim.client.command;
 
 import lombok.Getter;
 import org.zim.client.command.impl.EchoCommand;
+import org.zim.client.command.impl.HelpCommand;
+import org.zim.client.command.impl.MessageChatCommand;
 import org.zim.client.command.impl.QueryAllUserCommand;
 import org.zim.common.EchoHelper;
 import org.zim.common.channel.ZimChannel;
@@ -16,8 +18,10 @@ import java.io.IOException;
 @Getter
 public enum CommandHelper {
 
-    QUERY_ALL_USER("listu", "查看所有在线用户", new QueryAllUserCommand()),
-    ECHO          ("echo",  "Echo消息",       new EchoCommand())
+    QUERY_ALL_USER("-listu", "查看所有在线用户",        new QueryAllUserCommand()),
+    ECHO          ("-echo",  "Echo消息",              new EchoCommand()),
+    MESSAGE       (":",      ":[userName] msg 私聊",  new MessageChatCommand()),
+    HELP          ("-help",  "帮助",                  new HelpCommand()),
     ;
 
     private final String command;
@@ -32,7 +36,7 @@ public enum CommandHelper {
 
     public static int fireCommand(String line, ZimChannel channel) {
         Command command = Command.parse(line);
-        InnerCommand innerCommand = chooseCommand(command.getName());
+        InnerCommand innerCommand = chooseCommand(command);
         if (innerCommand == null) {
             EchoHelper.print("command [{}] not found", command.getName());
             return 0;
@@ -46,9 +50,10 @@ public enum CommandHelper {
         }
     }
 
-    public static InnerCommand chooseCommand(String command) {
+    public static InnerCommand chooseCommand(Command command) {
         for (CommandHelper value : values()) {
-            if (value.getCommand().equals(command)) {
+            if (command.getName().startsWith(value.getCommand())) {
+                command.tripHead(value.getCommand());
                 return value.getCommandHandler();
             }
         }

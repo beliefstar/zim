@@ -14,5 +14,7 @@ public interface InnerCommand {
 
     int handleCommand(String parameter, ZimChannel channel) throws IOException;
 
-    int handleCommandResponse(RemoteCommand response) throws IOException;
+    default int handleCommandResponse(RemoteCommand response) throws IOException {
+        return 0;
+    }
 }

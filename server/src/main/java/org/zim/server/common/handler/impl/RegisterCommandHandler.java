@@ -29,6 +29,6 @@ public class RegisterCommandHandler extends AbstractCommandHandler {
             EchoHelper.print("user [{}] online", registerCommand.getUserName());
             return RemoteCommand.createResponseCommand(CommandResponseType.REGISTER_OK);
         }
-        return RemoteCommand.createResponseCommand(CommandResponseType.ERROR, "user exist");
+        return RemoteCommand.createResponseCommand(CommandResponseType.REGISTER_ERROR, "user exist");
     }
 }

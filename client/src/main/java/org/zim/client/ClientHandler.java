@@ -6,7 +6,10 @@ import org.zim.client.command.impl.RegisterInnerCommand;
 import org.zim.common.EchoHelper;
 import org.zim.common.channel.UnCompleteException;
 import org.zim.common.channel.ZimChannel;
+import org.zim.common.channel.ZimChannelListener;
 import org.zim.common.channel.impl.ZimChannelImpl;
+import org.zim.common.model.ClientInfo;
+import org.zim.protocol.CommandResponseType;
 import org.zim.protocol.RemoteCommand;
 
 import java.io.IOException;
@@ -15,8 +18,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
-import java.util.Iterator;
-import java.util.Scanner;
+import java.util.*;
 
 public class ClientHandler {
 
@@ -29,24 +31,30 @@ public class ClientHandler {
     private final String host;
     private final int port;
 
+    private Long userId;
+    private String userName;
+
     private final Object scanWaiter = new Object();
+
+    private static ClientHandler instance;
+
+    public Map<String, ClientInfo> onlineClientInfoMap = new HashMap<>();
 
     public ClientHandler(String host, int port) {
         this.host = host;
         this.port = port;
+
+        instance = this;
+    }
+
+    public static ClientHandler getInstance() {
+        return instance;
     }
 
     public void start() throws Exception {
         selector = Selector.open();
         connect();
 
-        handleRegister();
-
-        synchronized (scanWaiter) {
-            while (!registered) {
-                scanWaiter.wait();
-            }
-        }
         listenScan();
     }
 
@@ -56,6 +64,12 @@ public class ClientHandler {
         sc.configureBlocking(false);
         System.out.println("connect: " + b);
         channel = new ZimChannelImpl(sc);
+        channel.registerListener(new ZimChannelListener() {
+            @Override
+            public void onRead(ZimChannel channel, ByteBuffer buffer) throws IOException {
+                handleResponse(buffer);
+            }
+        });
         sc.register(selector, SelectionKey.OP_READ | SelectionKey.OP_WRITE);
 
         if (selectorThread == null) {
@@ -82,7 +96,14 @@ public class ClientHandler {
             while (iterator.hasNext()) {
                 SelectionKey key = iterator.next();
                 if (key.isValid() && key.isReadable()) {
-                    handleResponse();
+                    try {
+                        channel.read();
+                    } catch (UnCompleteException ignore) {
+                    } catch (Exception e) {
+                        key.cancel();
+                        channel.close();
+                        connect();
+                    }
                 }
                 if (key.isValid() && key.isWritable()) {
                     channel.writeRemaining();
@@ -92,12 +113,20 @@ public class ClientHandler {
         }
     }
 
-    public void handleRegister() throws IOException {
-        registerInnerCommand.handleCommand("", channel);
-    }
+    private void listenScan() throws Exception {
+        Scanner scanner = new Scanner(System.in);
 
-    private void listenScan() {
-        Scanner scanner = EchoHelper.getScanner();
+        while (!registered) {
+            EchoHelper.printSystem("userName:");
+            if (scanner.hasNextLine()) {
+                String s = scanner.nextLine();
+
+                registerInnerCommand.handleCommand(s, channel);
+                synchronized (scanWaiter) {
+                        scanWaiter.wait();
+                }
+            }
+        }
         while (scanner.hasNextLine()) {
             String s = scanner.nextLine();
 
@@ -107,27 +136,25 @@ public class ClientHandler {
         }
     }
 
-    public void handleResponse() throws IOException {
-        ByteBuffer buffer;
-        try {
-             buffer = channel.read();
-        } catch (UnCompleteException e) {
-            return;
-        } catch (Exception e) {
-            channel.close();
-            connect();
-            return;
-        }
+    public void handleResponse(ByteBuffer buffer) throws IOException {
         RemoteCommand command = RemoteCommand.decode(buffer.array());
 
         if (!registered) {
             if (registerInnerCommand.handleCommandResponse(command) == 0) {
                 registered = true;
-
-                synchronized (scanWaiter) {
-                    scanWaiter.notifyAll();
-                }
             }
+            synchronized (scanWaiter) {
+                scanWaiter.notifyAll();
+            }
+            return;
+        }
+        if (command.getCode() == CommandResponseType.REGISTER_ERROR.getCode()) {
+            registered = false;
+            EchoHelper.printSystem("未注册");
+            return;
+        }
+        if (command.isMessageResponse()) {
+            MessageHandler.handle(command);
             return;
         }
         if (Command.CURRENT_COMMAND != null) {
@@ -135,5 +162,27 @@ public class ClientHandler {
         }
     }
 
+    public void updateOnlineUser(List<ClientInfo> list) {
+        Map<String, ClientInfo> map = new HashMap<>();
+        for (ClientInfo info : list) {
+            map.put(info.getUserName(), info);
+        }
+        onlineClientInfoMap = Collections.unmodifiableMap(map);
+    }
 
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
 }

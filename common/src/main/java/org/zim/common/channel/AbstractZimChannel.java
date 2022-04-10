@@ -1,5 +1,7 @@
 package org.zim.common.channel;
 
+import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
@@ -18,9 +20,15 @@ public abstract class AbstractZimChannel implements ZimChannel {
         listeners.offer(channelListener);
     }
 
-    public void triggerOnClose(ZimChannel channel) {
+    public void triggerOnClose() {
         for (ZimChannelListener listener : listeners) {
-            listener.onClose(channel);
+            listener.onClose(this);
+        }
+    }
+
+    public void triggerOnRead(ByteBuffer buffer) throws IOException {
+        for (ZimChannelListener listener : listeners) {
+            listener.onRead(this, buffer);
         }
     }
 

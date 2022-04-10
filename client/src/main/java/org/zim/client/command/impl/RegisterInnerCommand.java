@@ -1,5 +1,6 @@
 package org.zim.client.command.impl;
 
+import org.zim.client.ClientHandler;
 import org.zim.client.command.InnerCommand;
 import org.zim.common.EchoHelper;
 import org.zim.common.channel.ZimChannel;
@@ -22,11 +23,13 @@ public class RegisterInnerCommand implements InnerCommand {
 
     @Override
     public int handleCommand(String parameter, ZimChannel channel) throws IOException {
-        EchoHelper.print("userName:");
-        String s = EchoHelper.nextLine();
+        ClientHandler clientHandler = ClientHandler.getInstance();
+        clientHandler.setUserId(System.currentTimeMillis());
+        clientHandler.setUserName(parameter);
+
         RegisterCommand command = new RegisterCommand();
-        command.setUserId(System.currentTimeMillis());
-        command.setUserName(s);
+        command.setUserId(clientHandler.getUserId());
+        command.setUserName(clientHandler.getUserName());
 
         byte[] encode = command.encode();
         channel.write(ByteBuffer.wrap(encode));
@@ -38,10 +41,10 @@ public class RegisterInnerCommand implements InnerCommand {
     @Override
     public int handleCommandResponse(RemoteCommand response) throws IOException {
         if (response.getCode() == CommandResponseType.REGISTER_OK.getCode()) {
-            System.out.println("online success! username is [" + registerCommand.getUserName() + "], welcome to zim!");
+            EchoHelper.printSystem("online success! username is [" + registerCommand.getUserName() + "], welcome to zim!");
             return 0;
         } else {
-            EchoHelper.print(new String(response.getBody(), StandardCharsets.UTF_8));
+            EchoHelper.printSystem(new String(response.getBody(), StandardCharsets.UTF_8));
             return -1;
         }
     }

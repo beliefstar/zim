@@ -12,7 +12,7 @@ public interface ZimChannel {
     int READ_STATE = 1;
     int WRITE_STATE = 2;
 
-    ByteBuffer read() throws Exception;
+    void read() throws Exception;
 
     void write(byte[] data);
 

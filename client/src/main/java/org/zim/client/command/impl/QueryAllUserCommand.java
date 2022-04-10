@@ -1,9 +1,11 @@
 package org.zim.client.command.impl;
 
 import com.alibaba.fastjson.JSON;
+import org.zim.client.ClientHandler;
 import org.zim.client.command.InnerCommand;
 import org.zim.common.EchoHelper;
 import org.zim.common.channel.ZimChannel;
+import org.zim.common.model.ClientInfo;
 import org.zim.protocol.CommandRequestType;
 import org.zim.protocol.RemoteCommand;
 
@@ -30,10 +32,11 @@ public class QueryAllUserCommand implements InnerCommand {
     @Override
     public int handleCommandResponse(RemoteCommand response) throws IOException {
         String s = new String(response.getBody(), StandardCharsets.UTF_8);
-        List<String> list = JSON.parseArray(s, String.class);
-        for (String v : list) {
-            EchoHelper.print(v);
+        List<ClientInfo> list = JSON.parseArray(s, ClientInfo.class);
+        for (ClientInfo v : list) {
+            EchoHelper.print(v.getUserName());
         }
+        ClientHandler.getInstance().updateOnlineUser(list);
         return 0;
     }
 }

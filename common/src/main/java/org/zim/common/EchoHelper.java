@@ -20,23 +20,13 @@ public class EchoHelper {
         System.out.println(message);
     }
 
-    public static String nextLine() {
-        checkScanner();
-        return scanner.nextLine();
+    public static void printMessage(String sender, String message) {
+        System.out.printf("[PMSG]%s: %s%n", sender, message);
     }
 
-    public static Scanner getScanner() {
-        checkScanner();
-        return scanner;
+    public static void printSystem(String line, Object... args) {
+        String message = MessageFormatter.arrayFormat(line, args).getMessage();
+        System.out.println("[SYSTEM]: " + message);
     }
 
-    private static void checkScanner() {
-        if (scanner == null) {
-            synchronized (EchoHelper.class) {
-                if (scanner == null) {
-                    scanner = new Scanner(System.in);
-                }
-            }
-        }
-    }
 }

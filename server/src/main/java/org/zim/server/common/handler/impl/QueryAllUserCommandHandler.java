@@ -7,6 +7,7 @@ import org.zim.protocol.RemoteCommand;
 import org.zim.protocol.command.RegisterCommand;
 import org.zim.server.common.CommandProcessor;
 import org.zim.server.common.handler.AbstractCommandHandler;
+import org.zim.server.common.model.ServerClientInfo;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -24,7 +25,7 @@ public class QueryAllUserCommandHandler extends AbstractCommandHandler {
 
     @Override
     public RemoteCommand handleCommand(RemoteCommand command, ZimChannel channel) {
-        List<String> list = commandProcessor.getAccountService().queryAllUser();
+        List<ServerClientInfo> list = commandProcessor.getAccountService().queryAllUser();
         RemoteCommand response = RegisterCommand.createResponseCommand(CommandResponseType.QUERY_ALL_OK);
         response.setBody(JSON.toJSONString(list).getBytes(StandardCharsets.UTF_8));
         return response;

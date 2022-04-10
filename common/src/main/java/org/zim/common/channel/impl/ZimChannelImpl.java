@@ -28,18 +28,18 @@ public class ZimChannelImpl extends AbstractZimChannel {
     }
 
     @Override
-    public ByteBuffer read() throws IOException {
+    public void read() throws IOException {
         ByteBuffer buffer = this.readBuffer;
 
         buffer.clear();
-        int read = channel.read(buffer);
+        channel.read(buffer);
         buffer.flip();
 
-        return handleRead(read, buffer);
+        handleRead(buffer);
     }
 
-    private ByteBuffer handleRead(int read, ByteBuffer buffer) {
-        ByteBuffer nextFirst = null;
+    private void handleRead(ByteBuffer buffer) throws IOException {
+        ByteBuffer nextFirst;
         if (readData == null) {
             int size;
             try {
@@ -51,7 +51,7 @@ public class ZimChannelImpl extends AbstractZimChannel {
             }
             readSize = size;
             readData = ByteBuffer.allocate(readSize);
-            readData.put(buffer);
+            nextFirst = putReadData(buffer);
         } else {
             if (readSize == -1) {
                 ByteBuffer byteBuffer = ByteBuffer.allocate(readData.capacity() + buffer.limit());
@@ -69,39 +69,41 @@ public class ZimChannelImpl extends AbstractZimChannel {
                 }
                 readSize = size;
                 readData = ByteBuffer.allocate(readSize);
-                readData.put(byteBuffer);
-            } else {
-                int already = readData.position() + read;
-                if (already > readSize) {
-                    int overflow = already - readSize;
-                    int tailSize = read - overflow;
-                    byte[] bytes = new byte[tailSize];
-                    buffer.get(bytes);
-                    readData.put(bytes);
 
-                    byte[] next = new byte[buffer.remaining()];
-                    buffer.get(next);
-                    nextFirst = ByteBuffer.wrap(next);
-                } else if (already < readSize) {
-                    readData.put(buffer);
-                    throw new UnCompleteException();
-                } else {
-                    readData.put(buffer);
-                }
+                nextFirst = putReadData(byteBuffer);
+            } else {
+                nextFirst = putReadData(buffer);
             }
         }
 
         if (readData.position() == readSize) {
-            ByteBuffer res = readData;
+            triggerOnRead(readData);
 
             readData = null;
             readSize = -1;
             if (nextFirst != null) {
-                handleRead(nextFirst.limit(), nextFirst);
+                handleRead(nextFirst);
             }
-            return res;
         }
         throw new UnCompleteException();
+    }
+
+    private ByteBuffer putReadData(ByteBuffer buffer) {
+        if (buffer.remaining() > readData.remaining()) {
+            byte[] remaining = new byte[readData.remaining()];
+            buffer.get(remaining);
+            readData.put(remaining);
+
+            if (buffer.hasRemaining()) {
+                remaining = new byte[buffer.remaining()];
+                buffer.get(remaining);
+
+                return ByteBuffer.wrap(remaining);
+            }
+        } else {
+            readData.put(buffer);
+        }
+        return null;
     }
 
     @Override
@@ -147,7 +149,7 @@ public class ZimChannelImpl extends AbstractZimChannel {
 
     @Override
     public void close() {
-        triggerOnClose(this);
+        triggerOnClose();
         try {
             channel.close();
         } catch (IOException e) {

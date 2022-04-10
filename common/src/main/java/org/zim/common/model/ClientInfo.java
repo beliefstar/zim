@@ -1,7 +1,6 @@
-package org.zim.server.common.model;
+package org.zim.common.model;
 
 import lombok.Data;
-import org.zim.common.channel.ZimChannel;
 
 /**
  * @author zhenxin
@@ -12,6 +11,4 @@ import org.zim.common.channel.ZimChannel;
 public class ClientInfo {
     private Long userId;
     private String userName;
-
-    private ZimChannel zimChannel;
 }

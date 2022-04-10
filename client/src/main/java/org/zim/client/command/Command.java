@@ -19,13 +19,20 @@ public class Command {
     public static Command parse(String line) {
         line = line.trim();
         Command command = new Command();
+        command.setParameter(line);
         int breakPoint = line.indexOf(" ");
         if (breakPoint <= 0) {
             command.setName(line);
             return command;
         }
         command.setName(line.substring(0, breakPoint).trim());
-        command.setParameter(line.substring(breakPoint + 1).trim());
         return command;
+    }
+
+    public void tripHead(String command) {
+        int i = parameter.indexOf(command) + command.length();
+        if (i <= parameter.length()) {
+            parameter = parameter.substring(i).trim();
+        }
     }
 }
