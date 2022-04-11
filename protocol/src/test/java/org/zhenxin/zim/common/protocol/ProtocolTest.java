@@ -11,11 +11,6 @@ import org.zim.protocol.command.RegisterCommand;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
-/**
- * @author zhenxin
- * @program 广州智灵时代研发中心
- * @date 2022/4/8 11:27
- */
 public class ProtocolTest {
 
     @Test

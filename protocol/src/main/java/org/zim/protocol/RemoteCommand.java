@@ -7,11 +7,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * @author zhenxin
- * @program 广州智灵时代研发中心
- * @date 2022/4/7 14:52
- */
 @Data
 public class RemoteCommand {
     public static final int MAGIC_NUMBER = 8085888;
@@ -38,10 +33,6 @@ public class RemoteCommand {
 
     public void markResponse() {
         flag = RESPONSE_FLAG;
-    }
-
-    public boolean isMessageResponse() {
-        return code == CommandResponseType.PRIVATE_CHAT_MSG_OK.getCode();
     }
 
     public static RemoteCommand createResponseCommand() {

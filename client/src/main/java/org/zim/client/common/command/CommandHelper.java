@@ -1,20 +1,13 @@
-package org.zim.client.command;
+package org.zim.client.common.command;
 
 import lombok.Getter;
-import org.zim.client.command.impl.EchoCommand;
-import org.zim.client.command.impl.HelpCommand;
-import org.zim.client.command.impl.MessageChatCommand;
-import org.zim.client.command.impl.QueryAllUserCommand;
+import org.zim.client.common.ClientHandler;
+import org.zim.client.common.command.impl.EchoCommand;
+import org.zim.client.common.command.impl.HelpCommand;
+import org.zim.client.common.command.impl.MessageChatCommand;
+import org.zim.client.common.command.impl.QueryAllUserCommand;
 import org.zim.common.EchoHelper;
-import org.zim.common.channel.ZimChannel;
 
-import java.io.IOException;
-
-/**
- * @author zhenxin
- * @program 广州智灵时代研发中心
- * @date 2022/4/8 14:13
- */
 @Getter
 public enum CommandHelper {
 
@@ -34,20 +27,15 @@ public enum CommandHelper {
         this.commandHandler = commandHandler;
     }
 
-    public static int fireCommand(String line, ZimChannel channel) {
+    public static int fireCommand(String line, ClientHandler clientHandler) {
         Command command = Command.parse(line);
         InnerCommand innerCommand = chooseCommand(command);
         if (innerCommand == null) {
             EchoHelper.print("command [{}] not found", command.getName());
             return 0;
         }
-        try {
-            Command.CURRENT_COMMAND = innerCommand;
-            return innerCommand.handleCommand(command.getParameter(), channel);
-        } catch (IOException e) {
-            EchoHelper.print("found error: {}", e.getMessage());
-            return 0;
-        }
+        Command.CURRENT_COMMAND = innerCommand;
+        return innerCommand.handleCommand(command.getParameter(), clientHandler);
     }
 
     public static InnerCommand chooseCommand(Command command) {

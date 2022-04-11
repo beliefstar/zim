@@ -1,29 +1,23 @@
-package org.zim.client.command.impl;
+package org.zim.client.common.command.impl;
 
-import org.zim.client.ClientHandler;
-import org.zim.client.command.InnerCommand;
+import org.zim.client.common.ClientHandler;
+import org.zim.client.common.command.InnerCommand;
+import org.zim.client.common.message.MessageHandler;
 import org.zim.common.EchoHelper;
 import org.zim.common.StringTokenHelper;
-import org.zim.common.channel.ZimChannel;
 import org.zim.common.model.ClientInfo;
 import org.zim.protocol.CommandResponseType;
 import org.zim.protocol.RemoteCommand;
 import org.zim.protocol.command.PrivateChatMessageCommand;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
-/**
- * @author zhenxin
- * @program 广州智灵时代研发中心
- * @date 2022/4/8 18:02
- */
-public class MessageChatCommand implements InnerCommand {
+public class MessageChatCommand implements InnerCommand, MessageHandler {
 
     @Override
-    public int handleCommand(String parameter, ZimChannel channel) throws IOException {
+    public int handleCommand(String parameter, ClientHandler clientHandler) {
         StringTokenHelper tokens = new StringTokenHelper(parameter);
         String toName;
         String msg;
@@ -38,7 +32,7 @@ public class MessageChatCommand implements InnerCommand {
         }
         msg = tokens.remaining();
 
-        Map<String, ClientInfo> clientInfoMap = ClientHandler.getInstance().onlineClientInfoMap;
+        Map<String, ClientInfo> clientInfoMap = ClientHandler.INSTANCE.onlineClientInfoMap;
         ClientInfo toClient = clientInfoMap.get(toName);
         if (toClient == null) {
             EchoHelper.printSystem("用户[{}]不存在", toName);
@@ -46,18 +40,17 @@ public class MessageChatCommand implements InnerCommand {
         }
 
         PrivateChatMessageCommand command = new PrivateChatMessageCommand();
-        command.setFrom(ClientHandler.getInstance().getUserId());
+        command.setFrom(ClientHandler.INSTANCE.getUserId());
         command.setTo(toClient.getUserId());
         command.setBody(msg.getBytes(StandardCharsets.UTF_8));
-        channel.write(ByteBuffer.wrap(command.encode()));
+        clientHandler.getChannel().write(ByteBuffer.wrap(command.encode()));
         return 0;
     }
 
     @Override
-    public int handleCommandResponse(RemoteCommand response) throws IOException {
+    public void consumeMessage(RemoteCommand response) {
         if (response.getCode() != CommandResponseType.PRIVATE_CHAT_MSG_SEND_OK.getCode()) {
             EchoHelper.printSystem(new String(response.getBody(), StandardCharsets.UTF_8));
         }
-        return 0;
     }
 }

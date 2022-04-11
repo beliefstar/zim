@@ -14,11 +14,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * @author zhenxin
- * @program 广州智灵时代研发中心
- * @date 2022/4/8 16:34
- */
 public class AccountService {
 
     private final Map<Long, ServerClientInfo> userId2UserNameMap = new ConcurrentHashMap<>();

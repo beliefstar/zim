@@ -1,12 +1,11 @@
-package org.zim.server.version1.server;
-
+package org.zim.server.nio;
 
 import org.zim.common.EchoHelper;
 import org.zim.common.channel.UnCompleteException;
 import org.zim.common.channel.ZimChannel;
 import org.zim.common.channel.ZimChannelListener;
 import org.zim.common.channel.impl.ZimChannelImpl;
-import org.zim.server.common.Constants;
+import org.zim.server.common.CommandProcessor;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -18,41 +17,36 @@ import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 
 /**
- * @author zhenxin
- * @program 广州智灵时代研发中心
- * @date 2022/4/6 15:23
+ * 单线程 Reactor
+ *
  */
-public class ZimServer {
+public class SingleReactor {
 
-    private final Selector mainSelector;
-    private final ServerSocketChannel ssc;
+    private final String host;
+    private final int port;
 
-    private Thread mainSelectorThread;
-    private final ZimServerHandler serverHandler = new ZimServerHandler();
+    private Selector mainSelector;
+    private ServerSocketChannel ssc;
 
-    public ZimServer() throws IOException {
+    private final CommandProcessor commandProcessor = new CommandProcessor();
+
+    public SingleReactor(String host, int port) {
+        this.host = host;
+        this.port = port;
+    }
+
+    public void start() throws IOException {
         ssc = ServerSocketChannel.open();
-        ssc.bind(new InetSocketAddress("127.0.0.1", Constants.SERVER_PORT));
+        ssc.bind(new InetSocketAddress(host, port));
         ssc.configureBlocking(false);
 
         mainSelector = Selector.open();
         ssc.register(mainSelector, SelectionKey.OP_ACCEPT);
+
+        this.mainSelectLoop();
     }
 
-    public void start() throws IOException {
-        mainSelectorThread = new Thread(() -> {
-            try {
-                this.mainSelectLoop();
-            } catch (Exception e) {
-                EchoHelper.print("zim server: main select loop error!!!");
-                e.printStackTrace();
-            }
-        });
-
-        mainSelectorThread.start();
-    }
-
-    private void mainSelectLoop() throws Exception {
+    private void mainSelectLoop() throws IOException {
         EchoHelper.print("zim server: waiting accept...");
         while (true) {
             int select = mainSelector.select(5000);
@@ -72,7 +66,7 @@ public class ZimServer {
                         zimChannel.registerListener(new ZimChannelListener() {
                             @Override
                             public void onRead(ZimChannel channel, ByteBuffer buffer) throws IOException {
-                                serverHandler.handleRead(buffer, channel);
+                                commandProcessor.handleRead(buffer, channel);
                             }
                         });
                         selectionKey.attach(zimChannel);

@@ -9,11 +9,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
-/**
- * @author zhenxin
- * @program 广州智灵时代研发中心
- * @date 2022/4/8 16:29
- */
 public class ZimChannelImpl extends AbstractZimChannel {
 
     private final SocketChannel channel;
@@ -84,6 +79,7 @@ public class ZimChannelImpl extends AbstractZimChannel {
             if (nextFirst != null) {
                 handleRead(nextFirst);
             }
+            return;
         }
         throw new UnCompleteException();
     }

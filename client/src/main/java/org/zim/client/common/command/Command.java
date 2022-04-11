@@ -1,12 +1,7 @@
-package org.zim.client.command;
+package org.zim.client.common.command;
 
 import lombok.Data;
 
-/**
- * @author zhenxin
- * @program 广州智灵时代研发中心
- * @date 2022/4/8 14:33
- */
 @Data
 public class Command {
 

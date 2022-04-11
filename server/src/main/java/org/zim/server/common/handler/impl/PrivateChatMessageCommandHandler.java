@@ -32,7 +32,7 @@ public class PrivateChatMessageCommandHandler extends AbstractCommandHandler {
         }
 
         messageCommand.markResponse();
-        messageCommand.setCode(CommandResponseType.PRIVATE_CHAT_MSG_OK.getCode());
+        messageCommand.setCode(CommandResponseType.PRIVATE_CHAT_MSG.getCode());
         messageCommand.setFromName(fromClient.getUserName());
 
         toClient.getZimChannel().write(messageCommand.encode());

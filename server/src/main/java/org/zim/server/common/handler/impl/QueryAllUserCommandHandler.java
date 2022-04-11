@@ -12,11 +12,6 @@ import org.zim.server.common.model.ServerClientInfo;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-/**
- * @author zhenxin
- * @program 广州智灵时代研发中心
- * @date 2022/4/8 18:05
- */
 public class QueryAllUserCommandHandler extends AbstractCommandHandler {
 
     public QueryAllUserCommandHandler(CommandProcessor commandProcessor) {

@@ -7,11 +7,6 @@ import org.zim.protocol.command.RegisterCommand;
 
 import java.util.function.Supplier;
 
-/**
- * @author zhenxin
- * @program 广州智灵时代研发中心
- * @date 2022/4/7 15:02
- */
 @Getter
 public enum CommandRequestType {
 

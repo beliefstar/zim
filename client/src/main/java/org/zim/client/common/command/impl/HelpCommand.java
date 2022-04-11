@@ -1,15 +1,13 @@
-package org.zim.client.command.impl;
+package org.zim.client.common.command.impl;
 
-import org.zim.client.command.CommandHelper;
-import org.zim.client.command.InnerCommand;
+import org.zim.client.common.ClientHandler;
+import org.zim.client.common.command.CommandHelper;
+import org.zim.client.common.command.InnerCommand;
 import org.zim.common.EchoHelper;
-import org.zim.common.channel.ZimChannel;
-
-import java.io.IOException;
 
 public class HelpCommand implements InnerCommand {
     @Override
-    public int handleCommand(String parameter, ZimChannel channel) throws IOException {
+    public int handleCommand(String parameter, ClientHandler clientHandler) {
         CommandHelper[] values = CommandHelper.values();
         if (parameter != null && !parameter.isEmpty()) {
             for (CommandHelper value : values) {

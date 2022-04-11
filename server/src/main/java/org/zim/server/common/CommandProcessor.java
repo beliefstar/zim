@@ -12,14 +12,11 @@ import org.zim.server.common.handler.impl.QueryAllUserCommandHandler;
 import org.zim.server.common.handler.impl.RegisterCommandHandler;
 import org.zim.server.common.service.AccountService;
 
+import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * @author zhenxin
- * @program 广州智灵时代研发中心
- * @date 2022/4/8 15:06
- */
 public class CommandProcessor {
 
     private final Map<Short, CommandHandler> COMMAND_HANDLER_MAP = new HashMap<>();
@@ -51,5 +48,11 @@ public class CommandProcessor {
 
     public AccountService getAccountService() {
         return accountService;
+    }
+
+    public void handleRead(ByteBuffer buffer, ZimChannel channel) throws IOException {
+        byte[] bytes = buffer.array();
+        RemoteCommand command = RemoteCommand.decode(bytes);
+        process(command, channel);
     }
 }

@@ -2,11 +2,6 @@ package org.zim.protocol;
 
 import lombok.Getter;
 
-/**
- * @author zhenxin
- * @program 广州智灵时代研发中心
- * @date 2022/4/8 17:15
- */
 @Getter
 public enum CommandResponseType {
 
@@ -18,7 +13,7 @@ public enum CommandResponseType {
 
     PRIVATE_CHAT_MSG_SEND_OK((short) 30),
 
-    PRIVATE_CHAT_MSG_OK((short) 31),
+    PRIVATE_CHAT_MSG((short) 31),
 
     PRIVATE_CHAT_MSG_USER_NOT_FOUND((short) 32),
 

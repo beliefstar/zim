@@ -14,11 +14,6 @@ import org.zim.server.common.service.AccountService;
 
 import java.util.List;
 
-/**
- * @author zhenxin
- * @program 广州智灵时代研发中心
- * @date 2022/4/8 16:33
- */
 public class RegisterCommandHandler extends AbstractCommandHandler {
 
     public RegisterCommandHandler(CommandProcessor commandProcessor) {

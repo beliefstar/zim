@@ -6,11 +6,6 @@ import org.zim.protocol.RemoteCommand;
 
 import static org.zim.protocol.MessageConstants.*;
 
-/**
- * @author zhenxin
- * @program 广州智灵时代研发中心
- * @date 2022/4/8 16:15
- */
 public class PrivateChatMessageCommand extends RemoteCommand {
 
 
