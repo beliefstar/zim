@@ -19,9 +19,16 @@ public class Reactor {
     private Selector mainSelector;
     private ServerSocketChannel ssc;
 
+    private final boolean useParallel;
+
     public Reactor(String host, int port) {
+        this(host, port, false);
+    }
+
+    public Reactor(String host, int port, boolean useParallel) {
         this.host = host;
         this.port = port;
+        this.useParallel = useParallel;
     }
 
     public void start() throws IOException {
@@ -30,7 +37,7 @@ public class Reactor {
         ssc.configureBlocking(false);
 
         mainSelector = Selector.open();
-        ssc.register(mainSelector, SelectionKey.OP_ACCEPT, new Acceptor());
+        ssc.register(mainSelector, SelectionKey.OP_ACCEPT, new Acceptor(useParallel));
 
         this.ssc = ssc;
 

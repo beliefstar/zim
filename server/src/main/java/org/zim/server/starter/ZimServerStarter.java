@@ -12,6 +12,6 @@ public class ZimServerStarter {
 
     public static void main(String[] args) throws IOException {
         System.out.println("welcome to zim!\nversion: 1");
-        new Reactor("127.0.0.1", 7436).start();
+        new Reactor("127.0.0.1", 7436, true).start();
     }
 }

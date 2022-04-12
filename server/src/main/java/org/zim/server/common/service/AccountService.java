@@ -1,7 +1,7 @@
 package org.zim.server.common.service;
 
 
-import org.zim.common.EchoHelper;
+import lombok.extern.slf4j.Slf4j;
 import org.zim.common.channel.ZimChannel;
 import org.zim.common.channel.ZimChannelListener;
 import org.zim.protocol.CommandResponseType;
@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Slf4j
 public class AccountService {
 
     private final Map<Long, ServerClientInfo> userId2UserNameMap = new ConcurrentHashMap<>();
@@ -35,7 +36,7 @@ public class AccountService {
             public void onClose(ZimChannel zimChannel) {
                 ServerClientInfo info = channelClientInfoMap.get(zimChannel);
                 if (info != null) {
-                    EchoHelper.print("user [{}] offline", info.getUserName());
+                    log.info("user [{}] offline", info.getUserName());
                     userId2UserNameMap.remove(info.getUserId());
                     userName2UserIdMap.remove(info.getUserName());
                     channelClientInfoMap.remove(zimChannel);
@@ -45,6 +46,7 @@ public class AccountService {
                 }
             }
         });
+        log.info("user [{}] online", serverClientInfo.getUserName());
         return true;
     }
 

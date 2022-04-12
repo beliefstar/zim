@@ -31,8 +31,6 @@ public class RegisterCommandHandler extends AbstractCommandHandler {
         serverClientInfo.setZimChannel(channel);
 
         if (accountService.register(serverClientInfo)) {
-            EchoHelper.print("user [{}] online", registerCommand.getUserName());
-
             accountService.broadcastOnline(serverClientInfo);
 
             List<ServerClientInfo> infos = accountService.queryAllUser();

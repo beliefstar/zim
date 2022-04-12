@@ -1,4 +1,4 @@
-package org.zim.server.nio.single;
+package org.zim.server.nio.single.handler;
 
 import org.zim.common.ActionHandler;
 import org.zim.common.channel.ZimChannel;
@@ -9,6 +9,10 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 
+
+/**
+ * 单线程处理
+ */
 public class Handler implements ActionHandler {
 
     private final ZimChannel zimChannel;
