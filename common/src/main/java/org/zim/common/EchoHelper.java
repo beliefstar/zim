@@ -15,12 +15,12 @@ public class EchoHelper {
     }
 
     public static void printMessage(String sender, String message) {
-        String msg = String.format("[%s] %s : %s%n", date(), Color.BLUE.display(sender), message);
+        String msg = String.format("[%s]%s: %s%n", date(), Color.BLUE.display(sender, "4"), message);
         System.out.print(msg);
     }
 
     public static void printGroupMessage(String sender, String message) {
-        String msg = String.format("[%s]%s %s : %s%n", date(), Color.YELLOW.display("[GROUP]"), Color.BLUE.display(sender), message);
+        String msg = String.format("[%s]%s%s: %s%n", date(), Color.YELLOW.display("[GROUP]"), Color.BLUE.display(sender, "4"), message);
         System.out.print(msg);
     }
 
@@ -65,7 +65,11 @@ public class EchoHelper {
 
         // 1加粗；2正常；3斜体；4下划线；
         public String display(String s) {
-            return String.format("\033[%s;2m%s\033[0m", code, s);
+            return display(s, "2");
+        }
+
+        public String display(String s, String style) {
+            return String.format("\033[%s;%sm%s\033[0m", code, style, s);
         }
     }
 }
