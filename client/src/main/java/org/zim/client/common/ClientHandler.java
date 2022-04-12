@@ -2,7 +2,7 @@ package org.zim.client.common;
 
 import org.zim.client.common.message.MessageConsumer;
 import org.zim.client.common.scan.ConsoleScanner;
-import org.zim.client.common.scan.pipline.RegisterHandler;
+import org.zim.client.common.scan.pipeline.RegisterHandler;
 import org.zim.common.channel.ZimChannel;
 import org.zim.common.channel.ZimChannelListener;
 import org.zim.common.model.ClientInfo;
@@ -75,7 +75,7 @@ public class ClientHandler {
         onlineClientInfoMap = map;
     }
 
-    public void handleResponse(ByteBuffer buffer) throws IOException {
+    public void handleResponse(ByteBuffer buffer) {
         RemoteCommand command = RemoteCommand.decode(buffer.array());
 
         messageConsumer.handle(command);

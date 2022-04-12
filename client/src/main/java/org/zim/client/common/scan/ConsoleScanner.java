@@ -1,15 +1,14 @@
 package org.zim.client.common.scan;
 
 import org.zim.client.common.ClientHandler;
-import org.zim.client.common.scan.pipline.CommandHandler;
-import org.zim.common.pipline.PipLineContext;
-import org.zim.common.pipline.PipLineHolder;
+import org.zim.client.common.scan.pipeline.CommandHandler;
+import org.zim.common.pipeline.ZimPipeline;
 
 import java.util.Scanner;
 
 public class ConsoleScanner {
 
-    private PipLineHolder<String> pipLineHolder;
+    private final ZimPipeline<String> zimPipeline;
 
     private final Scanner scanner = new Scanner(System.in);
 
@@ -18,8 +17,8 @@ public class ConsoleScanner {
     public ConsoleScanner(ClientHandler clientHandler) {
         this.clientHandler = clientHandler;
 
-        pipLineHolder = new PipLineHolder<>();
-        pipLineHolder
+        zimPipeline = new ZimPipeline<>();
+        zimPipeline
                 .addLast(clientHandler.getRegisterHandler())
                 .addLast(new CommandHandler(clientHandler));
     }
@@ -28,7 +27,7 @@ public class ConsoleScanner {
         while (scanner.hasNextLine()) {
             String s = scanner.nextLine();
 
-            new PipLineContext<>(pipLineHolder).fireHandle(s);
+            zimPipeline.fireHandle(s);
         }
 
     }

@@ -25,8 +25,7 @@ public class QueryAllUserCommand implements InnerCommand, MessageHandler {
 
     @Override
     public void consumeMessage(RemoteCommand response) {
-        String s = new String(response.getBody(), StandardCharsets.UTF_8);
-        List<ClientInfo> list = JSON.parseArray(s, ClientInfo.class);
+        List<ClientInfo> list = JSON.parseArray(response.getBodyString(), ClientInfo.class);
         for (ClientInfo v : list) {
             EchoHelper.print(v.getUserName());
         }

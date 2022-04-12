@@ -23,7 +23,6 @@ public class EchoCommand implements InnerCommand, MessageHandler {
 
     @Override
     public void consumeMessage(RemoteCommand response) {
-        String s = new String(response.getBody(), StandardCharsets.UTF_8);
-        EchoHelper.print(s);
+        EchoHelper.print(response.getBodyString());
     }
 }

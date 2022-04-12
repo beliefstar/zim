@@ -8,6 +8,7 @@ import org.zim.common.StringTokenHelper;
 import org.zim.common.model.ClientInfo;
 import org.zim.protocol.CommandResponseType;
 import org.zim.protocol.RemoteCommand;
+import org.zim.protocol.command.GroupChatMessageCommand;
 import org.zim.protocol.command.PrivateChatMessageCommand;
 
 import java.nio.ByteBuffer;
@@ -32,25 +33,43 @@ public class MessageChatCommand implements InnerCommand, MessageHandler {
         }
         msg = tokens.remaining();
 
-        Map<String, ClientInfo> clientInfoMap = ClientHandler.INSTANCE.onlineClientInfoMap;
+        Map<String, ClientInfo> clientInfoMap = clientHandler.onlineClientInfoMap;
         ClientInfo toClient = clientInfoMap.get(toName);
         if (toClient == null) {
+            // maybe group
+            if (toName.equals("all")) {
+                handleGroupMessage(msg, clientHandler);
+                return 0;
+            }
+
             EchoHelper.printSystem("用户[{}]不存在", toName);
             return 0;
         }
 
-        PrivateChatMessageCommand command = new PrivateChatMessageCommand();
-        command.setFrom(ClientHandler.INSTANCE.getUserId());
-        command.setTo(toClient.getUserId());
-        command.setBody(msg.getBytes(StandardCharsets.UTF_8));
-        clientHandler.getChannel().write(ByteBuffer.wrap(command.encode()));
+        handlePrivateMessage(msg, toClient, clientHandler);
         return 0;
     }
 
     @Override
     public void consumeMessage(RemoteCommand response) {
-        if (response.getCode() != CommandResponseType.PRIVATE_CHAT_MSG_SEND_OK.getCode()) {
-            EchoHelper.printSystem(new String(response.getBody(), StandardCharsets.UTF_8));
+        if (response.getCode() != CommandResponseType.MSG_SEND_OK.getCode()) {
+            EchoHelper.printSystem(response.getBodyString());
         }
+    }
+
+    private void handleGroupMessage(String msg, ClientHandler clientHandler) {
+        GroupChatMessageCommand command = new GroupChatMessageCommand();
+        command.setFrom(clientHandler.getUserId());
+        command.setBody(msg.getBytes(StandardCharsets.UTF_8));
+
+        clientHandler.getChannel().write(ByteBuffer.wrap(command.encode()));
+    }
+
+    private void handlePrivateMessage(String msg, ClientInfo toClient, ClientHandler clientHandler) {
+        PrivateChatMessageCommand command = new PrivateChatMessageCommand();
+        command.setFrom(clientHandler.getUserId());
+        command.setTo(toClient.getUserId());
+        command.setBody(msg.getBytes(StandardCharsets.UTF_8));
+        clientHandler.getChannel().write(ByteBuffer.wrap(command.encode()));
     }
 }

@@ -1,12 +1,24 @@
 package org.zim.protocol;
 
 import lombok.Data;
+import org.zim.common.StringChecker;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
+
+/**
+ *
+ * protocol:
+ *
+ * +--------+--------------+--------+--------+-----------------------+---------------------+---------------+----------------+
+ * | Length | MAGIC_NUMBER | FLAG   | CODE   | EXTEND_FIELD_LENGTH   | EXTEND_FIELD        | BODY_LENGTH   | BODY CONTENT   |
+ * | 0x0004 | 0x0004       | 0x0001 | 0x0002 | 0x0004                | EXTEND_FIELD_LENGTH | 0x0004        | BODY_LENGTH    |
+ * +--------+--------------+--------+--------+-----------------------+---------------------+---------------+----------------+
+ *
+ */
 @Data
 public class RemoteCommand {
     public static final int MAGIC_NUMBER = 8085888;
@@ -47,8 +59,11 @@ public class RemoteCommand {
         RemoteCommand rc = new RemoteCommand();
         rc.setFlag(RESPONSE_FLAG);
         rc.setCode(responseType.getCode());
-        if (msg != null && !msg.isEmpty()) {
+        if (StringChecker.isNotEmpty(msg)) {
             rc.setBody(msg.getBytes(StandardCharsets.UTF_8));
+        }
+        else if (StringChecker.isNotEmpty(responseType.getInfo())){
+            rc.setBody(responseType.getInfo().getBytes(StandardCharsets.UTF_8));
         }
         return rc;
     }
@@ -161,5 +176,12 @@ public class RemoteCommand {
         }
 
         return map;
+    }
+
+    public String getBodyString() {
+        if (body == null) {
+            return null;
+        }
+        return new String(body, StandardCharsets.UTF_8);
     }
 }

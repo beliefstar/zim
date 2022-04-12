@@ -9,13 +9,17 @@ public enum CommandResponseType {
 
     REGISTER_ERROR((short) 11),
 
-    REGISTER_BROADCAST((short) 12),
+    BROADCAST_ONLINE((short) 12),
 
-    PRIVATE_CHAT_MSG_SEND_OK((short) 30),
+    BROADCAST_OFFLINE((short) 13),
+
+    MSG_SEND_OK((short) 20),
+
+    GROUP_CHAT_MSG((short) 21),
 
     PRIVATE_CHAT_MSG((short) 31),
 
-    PRIVATE_CHAT_MSG_USER_NOT_FOUND((short) 32),
+    PRIVATE_CHAT_MSG_USER_NOT_FOUND((short) 32, "user not found"),
 
     QUERY_ALL_OK((short) 40),
 
@@ -26,8 +30,15 @@ public enum CommandResponseType {
 
     private final short code;
 
+    private final String info;
+
     CommandResponseType(short code) {
+        this(code, null);
+    }
+
+    CommandResponseType(short code, String info) {
         this.code = code;
+        this.info = info;
     }
 
     public static CommandResponseType valueOf(short b) {

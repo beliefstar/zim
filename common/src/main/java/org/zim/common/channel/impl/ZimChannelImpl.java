@@ -30,23 +30,16 @@ public class ZimChannelImpl extends AbstractZimChannel {
         channel.read(buffer);
         buffer.flip();
 
-        handleRead(buffer);
+        try {
+            handleRead(buffer);
+        } catch (UnCompleteException ignore) {
+        }
     }
 
     private void handleRead(ByteBuffer buffer) throws IOException {
         ByteBuffer nextFirst;
         if (readData == null) {
-            int size;
-            try {
-                size = buffer.getInt();
-            } catch (Exception e) {
-                readData = ByteBuffer.allocate(buffer.limit());
-                readData.put(buffer);
-                throw new UnCompleteException();
-            }
-            readSize = size;
-            readData = ByteBuffer.allocate(readSize);
-            nextFirst = putReadData(buffer);
+            nextFirst = handleReadSize(buffer);
         } else {
             if (readSize == -1) {
                 ByteBuffer byteBuffer = ByteBuffer.allocate(readData.capacity() + buffer.limit());
@@ -54,18 +47,7 @@ public class ZimChannelImpl extends AbstractZimChannel {
                 byteBuffer.put(readData);
                 byteBuffer.put(buffer);
 
-                int size;
-                try {
-                    size = byteBuffer.getInt();
-                } catch (Exception e) {
-                    readData = ByteBuffer.allocate(byteBuffer.limit());
-                    readData.put(byteBuffer);
-                    throw new UnCompleteException();
-                }
-                readSize = size;
-                readData = ByteBuffer.allocate(readSize);
-
-                nextFirst = putReadData(byteBuffer);
+                nextFirst = handleReadSize(byteBuffer);
             } else {
                 nextFirst = putReadData(buffer);
             }
@@ -82,6 +64,20 @@ public class ZimChannelImpl extends AbstractZimChannel {
             return;
         }
         throw new UnCompleteException();
+    }
+
+    private ByteBuffer handleReadSize(ByteBuffer buffer) {
+        int size;
+        try {
+            size = buffer.getInt();
+        } catch (Exception e) {
+            readData = ByteBuffer.allocate(buffer.limit());
+            readData.put(buffer);
+            throw new UnCompleteException();
+        }
+        readSize = size;
+        readData = ByteBuffer.allocate(readSize);
+        return putReadData(buffer);
     }
 
     private ByteBuffer putReadData(ByteBuffer buffer) {
@@ -123,20 +119,15 @@ public class ZimChannelImpl extends AbstractZimChannel {
     }
 
     @Override
-    public void writeRemaining() {
+    public void writeRemaining() throws IOException {
         if (writeBuffer != null) {
             synchronized (channel) {
                 if (writeBuffer != null && writeBuffer.hasRemaining()) {
-                    try {
-                        int write = channel.write(writeBuffer);
-                        if (write < writeBuffer.limit()) {
-                            writeBuffer = writeBuffer.slice();
-                        } else {
-                            writeBuffer = null;
-                        }
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        close();
+                    int write = channel.write(writeBuffer);
+                    if (write < writeBuffer.limit()) {
+                        writeBuffer = writeBuffer.slice();
+                    } else {
+                        writeBuffer = null;
                     }
                 }
             }

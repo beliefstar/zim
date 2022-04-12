@@ -1,7 +1,6 @@
 package org.zim.server.nio;
 
 import org.zim.common.EchoHelper;
-import org.zim.common.channel.UnCompleteException;
 import org.zim.common.channel.ZimChannel;
 import org.zim.common.channel.ZimChannelListener;
 import org.zim.common.channel.impl.ZimChannelImpl;
@@ -76,8 +75,7 @@ public class SingleReactor {
                     ZimChannel zimChannel = (ZimChannel) key.attachment();
                     try {
                         zimChannel.read();
-                    } catch (UnCompleteException ignore) {
-                    } catch (Exception e) {
+                    } catch (IOException e) {
                         key.cancel();
                         zimChannel.close();
                     }

@@ -1,8 +1,8 @@
-package org.zim.client.nio;
+package org.zim.client.nio.single;
 
 import org.zim.client.common.ClientHandler;
+import org.zim.client.common.ReconnectHelper;
 import org.zim.common.EchoHelper;
-import org.zim.common.channel.UnCompleteException;
 import org.zim.common.channel.ZimChannel;
 import org.zim.common.channel.impl.ZimChannelImpl;
 
@@ -12,11 +12,14 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
-public class SingleReactor {
+
+/**
+ *
+ * 单线程 Reactor
+ *
+ */
+public class Reactor {
 
     private Selector selector;
     private volatile Thread selectorThread;
@@ -24,20 +27,16 @@ public class SingleReactor {
     private final String host;
     private final int port;
 
-    private ScheduledExecutorService scheduledExecutorService;
-
     private ClientHandler clientHandler;
 
     private volatile boolean reconnect = false;
 
-    public SingleReactor(String host, int port) {
+    public Reactor(String host, int port) {
         this.host = host;
         this.port = port;
     }
 
     public void start() throws Exception {
-        scheduledExecutorService = new ScheduledThreadPoolExecutor(1);
-
         selector = Selector.open();
         ZimChannel channel = connect();
 
@@ -46,7 +45,7 @@ public class SingleReactor {
         if (selectorThread == null) {
             Thread t = new Thread(() -> {
                 try {
-                    doSelect();
+                    select();
                 } catch (IOException e) {
                     System.out.println("select done");
                     e.printStackTrace();
@@ -75,7 +74,7 @@ public class SingleReactor {
         return channel;
     }
 
-    private void doSelect() throws IOException {
+    private void select() throws IOException {
         outer:
         while (true) {
             while (!reconnect) {
@@ -86,38 +85,32 @@ public class SingleReactor {
                 Iterator<SelectionKey> iterator = selector.selectedKeys().iterator();
                 while (iterator.hasNext()) {
                     SelectionKey key = iterator.next();
-                    if (key.isValid() && key.isReadable()) {
-                        try {
-                            clientHandler.getChannel().read();
-                        } catch (UnCompleteException ignore) {
-                        } catch (Exception e) {
-                            EchoHelper.printSystemError("lost connection");
-                            key.cancel();
-                            clientHandler.getChannel().close();
-                            reconnect(1);
-                        }
+
+                    try {
+                        dispatch(key);
+
+                    } catch (IOException e) {
+                        EchoHelper.printSystemError("lost connection");
+                        key.cancel();
+                        clientHandler.getChannel().close();
+                        ReconnectHelper.handleReconnect(() -> {
+                            ZimChannel channel = connect();
+                            clientHandler.resetChannel(channel);
+                        });
                     }
-                    if (key.isValid() && key.isWritable()) {
-                        clientHandler.getChannel().writeRemaining();
-                    }
+
                     iterator.remove();
                 }
             }
         }
     }
 
-    private void reconnect(int time) {
-        EchoHelper.printSystemError("reconnect..." + time);
-        try {
-            doReconnect();
-            return;
-        } catch (Exception ignore) {
+    private void dispatch(SelectionKey key) throws IOException {
+        if (key.isValid() && key.isReadable()) {
+            clientHandler.getChannel().read();
         }
-        scheduledExecutorService.schedule(() -> reconnect(time + 1), 10, TimeUnit.SECONDS);
-    }
-
-    private void doReconnect() throws Exception {
-        ZimChannel channel = connect();
-        clientHandler.resetChannel(channel);
+        if (key.isValid() && key.isWritable()) {
+            clientHandler.getChannel().writeRemaining();
+        }
     }
 }

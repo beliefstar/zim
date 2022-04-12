@@ -1,4 +1,4 @@
-package org.zhenxin.zim.common.protocol;
+package org.zim.common.protocol;
 
 import org.junit.Assert;
 import org.junit.Test;

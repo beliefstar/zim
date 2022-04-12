@@ -1,11 +1,11 @@
-package org.zim.client.common.scan.pipline;
+package org.zim.client.common.scan.pipeline;
 
 import org.zim.client.common.ClientHandler;
 import org.zim.client.common.command.CommandHelper;
-import org.zim.common.pipline.PipLineContext;
-import org.zim.common.pipline.PipLineHandler;
+import org.zim.common.pipeline.PipelineContext;
+import org.zim.common.pipeline.PipelineHandler;
 
-public class CommandHandler implements PipLineHandler<String> {
+public class CommandHandler implements PipelineHandler<String> {
 
     private final ClientHandler clientHandler;
 
@@ -14,7 +14,7 @@ public class CommandHandler implements PipLineHandler<String> {
     }
 
     @Override
-    public void handle(String command, PipLineContext<String> context) {
+    public void handle(String command, PipelineContext<String> context) {
         CommandHelper.fireCommand(command, clientHandler);
     }
 }

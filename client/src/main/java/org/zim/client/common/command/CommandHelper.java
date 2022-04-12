@@ -41,7 +41,7 @@ public enum CommandHelper {
     public static InnerCommand chooseCommand(Command command) {
         for (CommandHelper value : values()) {
             if (command.getName().startsWith(value.getCommand())) {
-                command.tripHead(value.getCommand());
+                command.stripHead(value.getCommand());
                 return value.getCommandHandler();
             }
         }

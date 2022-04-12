@@ -39,6 +39,9 @@ public class AccountService {
                     userId2UserNameMap.remove(info.getUserId());
                     userName2UserIdMap.remove(info.getUserName());
                     channelClientInfoMap.remove(zimChannel);
+
+                    // offline broadcast
+                    broadcastOffline(info);
                 }
             }
         });
@@ -54,7 +57,7 @@ public class AccountService {
     }
 
     public void broadcastOnline(ServerClientInfo clientInfo) {
-        RemoteCommand remoteCommand = RemoteCommand.createResponseCommand(CommandResponseType.REGISTER_BROADCAST);
+        RemoteCommand remoteCommand = RemoteCommand.createResponseCommand(CommandResponseType.BROADCAST_ONLINE);
         remoteCommand.putExtendField(MessageConstants.TO, Long.toString(clientInfo.getUserId()));
         remoteCommand.putExtendField(MessageConstants.TO_NAME, clientInfo.getUserName());
 
@@ -62,6 +65,18 @@ public class AccountService {
         for (ServerClientInfo info : infos) {
             if (!info.getUserId().equals(clientInfo.getUserId())) {
                 info.getZimChannel().write(remoteCommand.encode());
+            }
+        }
+    }
+
+    private void broadcastOffline(ServerClientInfo clientInfo) {
+        RemoteCommand command = RemoteCommand.createResponseCommand(CommandResponseType.BROADCAST_OFFLINE);
+        command.putExtendField(MessageConstants.TO, Long.toString(clientInfo.getUserId()));
+        command.putExtendField(MessageConstants.TO_NAME, clientInfo.getUserName());
+
+        for (ZimChannel zimChannel : channelClientInfoMap.keySet()) {
+            if (!zimChannel.equals(clientInfo.getZimChannel())) {
+                zimChannel.write(command.encode());
             }
         }
     }

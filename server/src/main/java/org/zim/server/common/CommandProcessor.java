@@ -6,10 +6,7 @@ import org.zim.protocol.CommandRequestType;
 import org.zim.protocol.CommandResponseType;
 import org.zim.protocol.RemoteCommand;
 import org.zim.server.common.handler.CommandHandler;
-import org.zim.server.common.handler.impl.EchoCommandHandler;
-import org.zim.server.common.handler.impl.PrivateChatMessageCommandHandler;
-import org.zim.server.common.handler.impl.QueryAllUserCommandHandler;
-import org.zim.server.common.handler.impl.RegisterCommandHandler;
+import org.zim.server.common.handler.impl.*;
 import org.zim.server.common.service.AccountService;
 
 import java.io.IOException;
@@ -32,6 +29,7 @@ public class CommandProcessor {
         COMMAND_HANDLER_MAP.put(CommandRequestType.QUERY_ALL_USER.getCode(), new QueryAllUserCommandHandler(this));
         COMMAND_HANDLER_MAP.put(CommandRequestType.ECHO.getCode(), new EchoCommandHandler(this));
         COMMAND_HANDLER_MAP.put(CommandRequestType.PRIVATE_CHAT_MESSAGE.getCode(), new PrivateChatMessageCommandHandler(this));
+        COMMAND_HANDLER_MAP.put(CommandRequestType.GROUP_CHAT_MESSAGE.getCode(), new GroupChatMessageCommandHandler(this));
     }
 
     public void process(RemoteCommand remoteCommand, ZimChannel zimChannel) {
@@ -40,7 +38,6 @@ public class CommandProcessor {
         try {
             response = commandHandler.handleCommand(remoteCommand, zimChannel);
         } catch (Exception e) {
-            e.printStackTrace();
             response = RemoteCommand.createResponseCommand(CommandResponseType.ERROR, e.getMessage());
         }
         zimChannel.write(response.encode());

@@ -24,7 +24,7 @@ public class Command {
         return command;
     }
 
-    public void tripHead(String command) {
+    public void stripHead(String command) {
         int i = parameter.indexOf(command) + command.length();
         if (i <= parameter.length()) {
             parameter = parameter.substring(i).trim();
