@@ -5,6 +5,9 @@ import org.zim.server.nio.SingleReactor;
 
 import java.io.IOException;
 
+/**
+ * 启动器
+ */
 public class ZimServerStarter {
 
     public static void main(String[] args) throws IOException {
