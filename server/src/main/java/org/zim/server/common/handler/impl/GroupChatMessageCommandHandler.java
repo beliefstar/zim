@@ -4,7 +4,6 @@ import org.zim.common.channel.ZimChannel;
 import org.zim.protocol.CommandResponseType;
 import org.zim.protocol.RemoteCommand;
 import org.zim.protocol.command.GroupChatMessageCommand;
-import org.zim.protocol.command.PrivateChatMessageCommand;
 import org.zim.server.common.CommandProcessor;
 import org.zim.server.common.handler.AbstractCommandHandler;
 import org.zim.server.common.model.ServerClientInfo;
@@ -33,7 +32,7 @@ public class GroupChatMessageCommandHandler extends AbstractCommandHandler {
 
         for (ServerClientInfo clientInfo : accountService.queryAllUser()) {
             if (!clientInfo.getUserId().equals(fromId)) {
-                clientInfo.getZimChannel().write(messageCommand.encode());
+                clientInfo.getZimChannel().write(messageCommand);
             }
         }
 

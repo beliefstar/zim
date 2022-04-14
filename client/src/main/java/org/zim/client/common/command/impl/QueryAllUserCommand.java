@@ -9,8 +9,6 @@ import org.zim.common.model.ClientInfo;
 import org.zim.protocol.CommandRequestType;
 import org.zim.protocol.RemoteCommand;
 
-import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 public class QueryAllUserCommand implements InnerCommand, MessageHandler {
@@ -19,7 +17,7 @@ public class QueryAllUserCommand implements InnerCommand, MessageHandler {
     public int handleCommand(String parameter, ClientHandler clientHandler) {
         RemoteCommand command = new RemoteCommand();
         command.setCode(CommandRequestType.QUERY_ALL_USER.getCode());
-        clientHandler.getChannel().write(ByteBuffer.wrap(command.encode()));
+        clientHandler.getChannel().write(command);
         return 0;
     }
 

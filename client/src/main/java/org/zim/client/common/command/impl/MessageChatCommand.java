@@ -11,7 +11,6 @@ import org.zim.protocol.RemoteCommand;
 import org.zim.protocol.command.GroupChatMessageCommand;
 import org.zim.protocol.command.PrivateChatMessageCommand;
 
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
@@ -62,7 +61,7 @@ public class MessageChatCommand implements InnerCommand, MessageHandler {
         command.setFrom(clientHandler.getUserId());
         command.setBody(msg.getBytes(StandardCharsets.UTF_8));
 
-        clientHandler.getChannel().write(ByteBuffer.wrap(command.encode()));
+        clientHandler.getChannel().write(command);
     }
 
     private void handlePrivateMessage(String msg, ClientInfo toClient, ClientHandler clientHandler) {
@@ -70,6 +69,6 @@ public class MessageChatCommand implements InnerCommand, MessageHandler {
         command.setFrom(clientHandler.getUserId());
         command.setTo(toClient.getUserId());
         command.setBody(msg.getBytes(StandardCharsets.UTF_8));
-        clientHandler.getChannel().write(ByteBuffer.wrap(command.encode()));
+        clientHandler.getChannel().write(command);
     }
 }

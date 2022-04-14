@@ -1,45 +1,73 @@
 package org.zim.common.channel;
 
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import lombok.extern.slf4j.Slf4j;
+import org.zim.common.channel.pipeline.ZimChannelPipeline;
 
+import java.nio.channels.ClosedChannelException;
+import java.nio.channels.SelectableChannel;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
+
+@Slf4j
 public abstract class AbstractZimChannel implements ZimChannel {
 
-    private final ConcurrentLinkedQueue<ZimChannelListener> listeners = new ConcurrentLinkedQueue<>();
+    private final SelectableChannel ch;
+    private final ZimChannelPipeline pipeline;
+    private final Unsafe unsafe;
+    private SelectionKey selectionKey;
 
-    protected volatile int state = 0;
+    protected final CloseFuture closeFuture;
+
+    public AbstractZimChannel(SelectableChannel channel) {
+        ch = channel;
+        unsafe = newUnsafe();
+        closeFuture = new CloseFuture();
+        pipeline = new ZimChannelPipeline(this);
+    }
 
     @Override
-    public void registerListener(ZimChannelListener channelListener) {
-        listeners.offer(channelListener);
+    public CloseFuture closeFuture() {
+        return closeFuture;
     }
 
-    public void triggerOnClose() {
-        for (ZimChannelListener listener : listeners) {
-            listener.onClose(this);
+    @Override
+    public ZimChannelPipeline pipeline() {
+        return pipeline;
+    }
+
+    @Override
+    public Unsafe unsafe() {
+        return unsafe;
+    }
+
+    protected abstract Unsafe newUnsafe();
+
+    @Override
+    public void register(Selector selector) {
+        try {
+            selectionKey = ch.register(selector, SelectionKey.OP_READ | SelectionKey.OP_WRITE, this);
+
+            pipeline().fireRegister();
+        } catch (ClosedChannelException e) {
+            close();
         }
     }
 
-    public void triggerOnRead(ByteBuffer buffer) throws IOException {
-        for (ZimChannelListener listener : listeners) {
-            listener.onRead(this, buffer);
-        }
+    @Override
+    public void write(Object msg) {
+        pipeline.fireWrite(msg);
     }
 
-    public boolean isReadState() {
-        return state == ZimChannel.READ_STATE;
+    @Override
+    public void close() {
+        pipeline().fireClose();
     }
 
-    public boolean isWriteState() {
-        return state == ZimChannel.WRITE_STATE;
+    public SelectionKey selectionKey() {
+        return selectionKey;
     }
 
-    public void markReadState() {
-        state = ZimChannel.READ_STATE;
-    }
-
-    public void markWriteState() {
-        state = ZimChannel.WRITE_STATE;
+    protected SelectableChannel javaChannel() {
+        return ch;
     }
 }

@@ -3,19 +3,17 @@ package org.zim.client.common.scan.pipeline;
 import com.alibaba.fastjson.JSON;
 import org.zim.client.common.ClientHandler;
 import org.zim.client.common.message.MessageHandler;
+import org.zim.client.common.scan.ScanHandler;
 import org.zim.common.EchoHelper;
 import org.zim.common.model.ClientInfo;
-import org.zim.common.pipeline.PipelineContext;
-import org.zim.common.pipeline.PipelineHandler;
 import org.zim.protocol.CommandResponseType;
 import org.zim.protocol.MessageConstants;
 import org.zim.protocol.RemoteCommand;
 import org.zim.protocol.command.RegisterCommand;
 
-import java.nio.ByteBuffer;
 import java.util.List;
 
-public class RegisterHandler implements PipelineHandler<String>, MessageHandler {
+public class RegisterHandler implements ScanHandler, MessageHandler {
 
     private final ClientHandler clientHandler;
 
@@ -31,19 +29,21 @@ public class RegisterHandler implements PipelineHandler<String>, MessageHandler 
     }
 
     @Override
-    public void handle(String line, PipelineContext<String> context) {
+    public boolean handle(String line) {
         if (registered) {
-            context.fireHandle(line);
-            return;
+            return true;
         }
-        if (sendRegister) {
-            // ignore
-            return;
-        }
-        clientHandler.setUserId(System.currentTimeMillis());
-        clientHandler.setUserName(line);
+        if (!sendRegister) {
+            clientHandler.setUserId(System.currentTimeMillis());
+            clientHandler.setUserName(line);
 
-        remoteRegister();
+            remoteRegister();
+        }
+        return false;
+    }
+
+    public boolean isRegistered() {
+        return registered;
     }
 
     public void markRegistered() {
@@ -59,8 +59,7 @@ public class RegisterHandler implements PipelineHandler<String>, MessageHandler 
         command.setUserId(clientHandler.getUserId());
         command.setUserName(clientHandler.getUserName());
 
-        byte[] encode = command.encode();
-        clientHandler.getChannel().write(ByteBuffer.wrap(encode));
+        clientHandler.getChannel().write(command);
         sendRegister = true;
     }
 

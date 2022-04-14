@@ -1,22 +1,27 @@
 package org.zim.common.channel;
 
-import java.io.IOException;
-import java.nio.ByteBuffer;
+import org.zim.common.channel.pipeline.ZimChannelPipeline;
+
+import java.nio.channels.Selector;
 
 public interface ZimChannel {
 
-    int READ_STATE = 1;
-    int WRITE_STATE = 2;
+    void register(Selector selector);
 
-    void read() throws IOException;
-
-    void write(byte[] data);
-
-    void write(ByteBuffer buffer);
-
-    void writeRemaining() throws IOException;
+    void write(Object msg);
 
     void close();
 
-    void registerListener(ZimChannelListener channelListener);
+    CloseFuture closeFuture();
+
+    ZimChannelPipeline pipeline();
+
+    Unsafe unsafe();
+
+    interface Unsafe {
+        void read();
+        void write(Object msg);
+        void flush();
+        void close();
+    }
 }

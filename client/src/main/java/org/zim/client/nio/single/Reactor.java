@@ -1,10 +1,10 @@
 package org.zim.client.nio.single;
 
-import org.zim.client.common.ClientHandler;
 import org.zim.client.common.ReconnectHelper;
 import org.zim.common.EchoHelper;
 import org.zim.common.channel.ZimChannel;
 import org.zim.common.channel.impl.ZimChannelImpl;
+import org.zim.common.channel.pipeline.ZimChannelHandler;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -12,6 +12,8 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 
 /**
@@ -27,20 +29,19 @@ public class Reactor {
     private final String host;
     private final int port;
 
-    private ClientHandler clientHandler;
+    private final ZimChannelHandler channelHandler;
 
-    private volatile boolean reconnect = false;
+    private final Queue<ZimChannel> registerQueue = new ConcurrentLinkedQueue<>();
 
-    public Reactor(String host, int port) {
+    public Reactor(String host, int port, ZimChannelHandler channelHandler) {
         this.host = host;
         this.port = port;
+        this.channelHandler = channelHandler;
     }
 
     public void start() throws Exception {
         selector = Selector.open();
-        ZimChannel channel = connect();
-
-        clientHandler = new ClientHandler(channel);
+        connect();
 
         if (selectorThread == null) {
             Thread t = new Thread(() -> {
@@ -55,8 +56,6 @@ public class Reactor {
             t.start();
             selectorThread = t;
         }
-
-        clientHandler.listenScan();
     }
 
     private ZimChannel connect() throws IOException {
@@ -65,52 +64,50 @@ public class Reactor {
         sc.configureBlocking(false);
         EchoHelper.printSystemError("connect: " + b);
         ZimChannel channel = new ZimChannelImpl(sc);
+        channel.pipeline().addLast(channelHandler);
 
-        reconnect = true;
+        channel.closeFuture().addListener(() -> ReconnectHelper.handleReconnect(this::connect));
+
+        registerQueue.offer(channel);
         selector.wakeup();
-        sc.register(selector, SelectionKey.OP_READ | SelectionKey.OP_WRITE);
-        reconnect = false;
 
         return channel;
     }
 
     private void select() throws IOException {
-        outer:
         while (true) {
-            while (!reconnect) {
-                int select = selector.select(5000);
-                if (select <= 0) {
-                    continue outer;
-                }
+            int select = selector.select(5000);
+            if (select > 0) {
                 Iterator<SelectionKey> iterator = selector.selectedKeys().iterator();
                 while (iterator.hasNext()) {
                     SelectionKey key = iterator.next();
 
-                    try {
-                        dispatch(key);
-
-                    } catch (IOException e) {
-                        EchoHelper.printSystemError("lost connection");
-                        key.cancel();
-                        clientHandler.getChannel().close();
-                        ReconnectHelper.handleReconnect(() -> {
-                            ZimChannel channel = connect();
-                            clientHandler.resetChannel(channel);
-                        });
-                    }
+                    dispatch(key);
 
                     iterator.remove();
                 }
             }
+
+            runRegisterTask();
         }
     }
 
-    private void dispatch(SelectionKey key) throws IOException {
+    private void dispatch(SelectionKey key) {
+        ZimChannel channel = (ZimChannel) key.attachment();
+        ZimChannel.Unsafe unsafe = channel.unsafe();
         if (key.isValid() && key.isReadable()) {
-            clientHandler.getChannel().read();
+            unsafe.read();
         }
         if (key.isValid() && key.isWritable()) {
-            clientHandler.getChannel().writeRemaining();
+            unsafe.flush();
+        }
+    }
+
+    private void runRegisterTask() {
+        while (!registerQueue.isEmpty()) {
+            ZimChannel channel = registerQueue.poll();
+
+            channel.register(selector);
         }
     }
 }

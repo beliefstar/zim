@@ -2,10 +2,9 @@ package org.zim.client.common.scan.pipeline;
 
 import org.zim.client.common.ClientHandler;
 import org.zim.client.common.command.CommandHelper;
-import org.zim.common.pipeline.PipelineContext;
-import org.zim.common.pipeline.PipelineHandler;
+import org.zim.client.common.scan.ScanHandler;
 
-public class CommandHandler implements PipelineHandler<String> {
+public class CommandHandler implements ScanHandler {
 
     private final ClientHandler clientHandler;
 
@@ -14,7 +13,8 @@ public class CommandHandler implements PipelineHandler<String> {
     }
 
     @Override
-    public void handle(String command, PipelineContext<String> context) {
+    public boolean handle(String command) {
         CommandHelper.fireCommand(command, clientHandler);
+        return false;
     }
 }

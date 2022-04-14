@@ -35,7 +35,7 @@ public class PrivateChatMessageCommandHandler extends AbstractCommandHandler {
         messageCommand.setCode(CommandResponseType.PRIVATE_CHAT_MSG.getCode());
         messageCommand.setFromName(fromClient.getUserName());
 
-        toClient.getZimChannel().write(messageCommand.encode());
+        toClient.getZimChannel().write(messageCommand);
         return RemoteCommand.createResponseCommand(CommandResponseType.MSG_SEND_OK);
     }
 }

@@ -7,7 +7,6 @@ import org.zim.common.EchoHelper;
 import org.zim.protocol.CommandRequestType;
 import org.zim.protocol.RemoteCommand;
 
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
 public class EchoCommand implements InnerCommand, MessageHandler {
@@ -17,7 +16,7 @@ public class EchoCommand implements InnerCommand, MessageHandler {
         RemoteCommand command = new RemoteCommand();
         command.setCode(CommandRequestType.ECHO.getCode());
         command.setBody(parameter.getBytes(StandardCharsets.UTF_8));
-        clientHandler.getChannel().write(ByteBuffer.wrap(command.encode()));
+        clientHandler.getChannel().write(command);
         return 0;
     }
 

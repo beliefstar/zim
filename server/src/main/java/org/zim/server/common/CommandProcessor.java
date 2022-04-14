@@ -2,6 +2,8 @@ package org.zim.server.common;
 
 
 import org.zim.common.channel.ZimChannel;
+import org.zim.common.channel.pipeline.ZimChannelHandler;
+import org.zim.common.channel.pipeline.ZimChannelPipelineContext;
 import org.zim.protocol.CommandRequestType;
 import org.zim.protocol.CommandResponseType;
 import org.zim.protocol.RemoteCommand;
@@ -9,12 +11,10 @@ import org.zim.server.common.handler.CommandHandler;
 import org.zim.server.common.handler.impl.*;
 import org.zim.server.common.service.AccountService;
 
-import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
-public class CommandProcessor {
+public class CommandProcessor implements ZimChannelHandler {
 
     private final Map<Short, CommandHandler> COMMAND_HANDLER_MAP = new HashMap<>();
 
@@ -40,16 +40,15 @@ public class CommandProcessor {
         } catch (Exception e) {
             response = RemoteCommand.createResponseCommand(CommandResponseType.ERROR, e.getMessage());
         }
-        zimChannel.write(response.encode());
+        zimChannel.write(response);
     }
 
     public AccountService getAccountService() {
         return accountService;
     }
 
-    public void handleRead(ByteBuffer buffer, ZimChannel channel) throws IOException {
-        byte[] bytes = buffer.array();
-        RemoteCommand command = RemoteCommand.decode(bytes);
-        process(command, channel);
+    @Override
+    public void handleRead(ZimChannelPipelineContext ctx, Object msg) throws Exception {
+        process((RemoteCommand) msg, ctx.channel());
     }
 }

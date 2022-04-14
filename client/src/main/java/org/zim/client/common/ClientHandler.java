@@ -4,18 +4,16 @@ import org.zim.client.common.message.MessageConsumer;
 import org.zim.client.common.scan.ConsoleScanner;
 import org.zim.client.common.scan.pipeline.RegisterHandler;
 import org.zim.common.channel.ZimChannel;
-import org.zim.common.channel.ZimChannelListener;
+import org.zim.common.channel.pipeline.ZimChannelHandler;
+import org.zim.common.channel.pipeline.ZimChannelPipelineContext;
 import org.zim.common.model.ClientInfo;
 import org.zim.protocol.RemoteCommand;
 
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class ClientHandler {
+public class ClientHandler implements ZimChannelHandler {
     public static ClientHandler INSTANCE;
 
     private ZimChannel channel;
@@ -23,15 +21,13 @@ public class ClientHandler {
     private Long userId;
     private String userName;
 
-    public Map<String, ClientInfo> onlineClientInfoMap = new HashMap<>();
+    public Map<String, ClientInfo> onlineClientInfoMap = new ConcurrentHashMap<>();
 
     private final RegisterHandler registerHandler;
     private final MessageConsumer messageConsumer;
     private final ConsoleScanner consoleScanner;
 
-    public ClientHandler(ZimChannel channel) {
-        setChannel(channel);
-
+    public ClientHandler() {
         ClientHandler.INSTANCE = this;
         registerHandler = new RegisterHandler(this);
         messageConsumer = new MessageConsumer(this);
@@ -47,20 +43,18 @@ public class ClientHandler {
         return channel;
     }
 
-    public void resetChannel(ZimChannel channel) {
-        setChannel(channel);
-        registerHandler.markUnRegistered();
-        registerHandler.remoteRegister();
+    @Override
+    public void handleRegister(ZimChannelPipelineContext ctx) throws Exception {
+        this.channel = ctx.channel();
+        if (registerHandler.isRegistered()) {
+            registerHandler.markUnRegistered();
+            registerHandler.remoteRegister();
+        }
     }
 
-    public void setChannel(ZimChannel channel) {
-        this.channel = channel;
-        this.channel.registerListener(new ZimChannelListener() {
-            @Override
-            public void onRead(ZimChannel channel, ByteBuffer buffer) throws IOException {
-                handleResponse(buffer);
-            }
-        });
+    @Override
+    public void handleRead(ZimChannelPipelineContext ctx, Object msg) throws Exception {
+        messageConsumer.handle((RemoteCommand) msg);
     }
 
     public RegisterHandler getRegisterHandler() {
@@ -73,12 +67,6 @@ public class ClientHandler {
             map.put(info.getUserName(), info);
         }
         onlineClientInfoMap = map;
-    }
-
-    public void handleResponse(ByteBuffer buffer) {
-        RemoteCommand command = RemoteCommand.decode(buffer.array());
-
-        messageConsumer.handle(command);
     }
 
     public Long getUserId() {

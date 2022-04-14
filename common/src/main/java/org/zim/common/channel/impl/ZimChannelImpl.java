@@ -2,6 +2,7 @@ package org.zim.common.channel.impl;
 
 
 
+import lombok.extern.slf4j.Slf4j;
 import org.zim.common.channel.AbstractZimChannel;
 import org.zim.common.channel.UnCompleteException;
 
@@ -9,9 +10,9 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
+@Slf4j
 public class ZimChannelImpl extends AbstractZimChannel {
 
-    private final SocketChannel channel;
     private final ByteBuffer readBuffer = ByteBuffer.allocate(1024);
     private ByteBuffer readData;
     private ByteBuffer writeBuffer;
@@ -19,21 +20,7 @@ public class ZimChannelImpl extends AbstractZimChannel {
     private int readSize = -1;
 
     public ZimChannelImpl(SocketChannel channel) {
-        this.channel = channel;
-    }
-
-    @Override
-    public void read() throws IOException {
-        ByteBuffer buffer = this.readBuffer;
-
-        buffer.clear();
-        channel.read(buffer);
-        buffer.flip();
-
-        try {
-            handleRead(buffer);
-        } catch (UnCompleteException ignore) {
-        }
+        super(channel);
     }
 
     private void handleRead(ByteBuffer buffer) throws IOException {
@@ -54,7 +41,7 @@ public class ZimChannelImpl extends AbstractZimChannel {
         }
 
         if (readData.position() == readSize) {
-            triggerOnRead(readData);
+            pipeline().fireRead(readData);
 
             readData = null;
             readSize = -1;
@@ -99,57 +86,111 @@ public class ZimChannelImpl extends AbstractZimChannel {
     }
 
     @Override
-    public void write(byte[] data) {
-        write(ByteBuffer.wrap(data));
-    }
-
-    @Override
-    public void write(ByteBuffer buffer) {
-        synchronized (channel) {
-            if (writeBuffer == null) {
-                writeBuffer = buffer;
-            } else {
-                ByteBuffer byteBuffer = ByteBuffer.allocate(buffer.limit() + writeBuffer.limit());
-                byteBuffer.put(writeBuffer);
-                byteBuffer.put(buffer);
-                byteBuffer.flip();
-                writeBuffer = byteBuffer;
-            }
-        }
-    }
-
-    @Override
-    public void writeRemaining() throws IOException {
-        if (writeBuffer != null) {
-            synchronized (channel) {
-                if (writeBuffer != null && writeBuffer.hasRemaining()) {
-                    int write = channel.write(writeBuffer);
-                    if (write < writeBuffer.limit()) {
-                        writeBuffer = writeBuffer.slice();
-                    } else {
-                        writeBuffer = null;
-                    }
-                }
-            }
-        }
-    }
-
-    @Override
-    public void close() {
-        triggerOnClose();
-        try {
-            channel.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Override
     public String toString() {
         return "ZimChannelImpl{" +
                 "readBuffer=" + readBuffer +
                 ", readData=" + readData +
                 ", readSize=" + readSize +
                 '}';
+    }
+
+    @Override
+    protected Unsafe newUnsafe() {
+        return new ZimUnsafeImpl();
+    }
+
+    protected SocketChannel javaChannel() {
+        return (SocketChannel) super.javaChannel();
+    }
+
+    private final class ZimUnsafeImpl implements Unsafe {
+
+        @Override
+        public void read() {
+            ByteBuffer buffer = readBuffer;
+
+            boolean close = false;
+            try {
+                buffer.clear();
+                int read = javaChannel().read(buffer);
+                if (read > 0) {
+                    buffer.flip();
+
+                    try {
+                        handleRead(buffer);
+                    } catch (UnCompleteException ignore) {
+                    }
+                } else {
+                    close = true;
+                }
+            } catch (IOException e) {
+                close = true;
+            } finally {
+                if (close) {
+                    close();
+                }
+            }
+        }
+
+        @Override
+        public void write(Object msg) {
+            if (msg instanceof ByteBuffer) {
+                ByteBuffer buffer = ((ByteBuffer) msg);
+                synchronized (this) {
+                    if (writeBuffer == null) {
+                        writeBuffer = buffer;
+                    } else {
+                        ByteBuffer byteBuffer = ByteBuffer.allocate(buffer.limit() + writeBuffer.limit());
+                        byteBuffer.put(writeBuffer);
+                        byteBuffer.put(buffer);
+                        byteBuffer.flip();
+                        writeBuffer = byteBuffer;
+                    }
+                }
+            } else {
+                throw new IllegalArgumentException();
+            }
+        }
+
+        @Override
+        public void flush() {
+            if (writeBuffer != null) {
+                synchronized (this) {
+                    if (writeBuffer != null && writeBuffer.hasRemaining()) {
+                        boolean close = false;
+                        try {
+                            int write = javaChannel().write(writeBuffer);
+                            if (write < 0) {
+                                close = true;
+                            } else {
+                                if (write < writeBuffer.limit()) {
+                                    writeBuffer = writeBuffer.slice();
+                                } else {
+                                    writeBuffer = null;
+                                }
+                            }
+                        } catch (IOException e) {
+                            close = true;
+                        } finally {
+                            if (close) {
+                                close();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        @Override
+        public void close() {
+            try {
+                selectionKey().cancel();
+                javaChannel().close();
+            } catch (IOException e) {
+                log.error("close socket error: [{}]", e.getMessage());
+            } finally {
+                closeFuture().closeComplete();
+            }
+        }
     }
 }
