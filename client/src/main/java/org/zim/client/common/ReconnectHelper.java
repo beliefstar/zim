@@ -4,11 +4,19 @@ import org.zim.common.EchoHelper;
 
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 public class ReconnectHelper {
 
-    private final ScheduledExecutorService scheduledExecutorService = new ScheduledThreadPoolExecutor(1);;
+    private final ScheduledExecutorService scheduledExecutorService = new ScheduledThreadPoolExecutor(1, new ThreadFactory() {
+        @Override
+        public Thread newThread(Runnable r) {
+            Thread t = new Thread(r);
+            t.setName("zim-reconnect-exec-single");
+            return t;
+        }
+    });
 
     private final ReconnectAction action;
     private int reconnectCount = 0;
@@ -18,7 +26,11 @@ public class ReconnectHelper {
     }
 
     public static void handleReconnect(ReconnectAction action) {
-        new ReconnectHelper(action).reconnect();
+        new ReconnectHelper(action).handleReconnect();
+    }
+
+    private void handleReconnect() {
+        scheduledExecutorService.schedule(this::reconnect, 1, TimeUnit.SECONDS);
     }
 
     private void reconnect() {
@@ -28,7 +40,6 @@ public class ReconnectHelper {
             return;
         } catch (Exception ignore) {
         }
-        System.out.println("--");
         scheduledExecutorService.schedule(this::reconnect, 10, TimeUnit.SECONDS);
     }
 

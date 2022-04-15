@@ -20,10 +20,10 @@ public class ZimChannelFuture {
         this.channel = channel;
     }
 
-    public void addListener(ZimChannelCloseListener actionHandler) {
+    public ZimChannelFuture addListener(ZimChannelCloseListener actionHandler) {
         if (completeState.get()) {
             actionHandler.onComplete(this);
-            return;
+            return this;
         }
         processing.set(true);
         try {
@@ -31,6 +31,7 @@ public class ZimChannelFuture {
         } finally {
             processing.set(false);
         }
+        return this;
     }
 
     public void failure() {

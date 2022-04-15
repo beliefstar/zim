@@ -33,7 +33,6 @@ public class ReactorEventLoop implements EventLoop {
     }
 
     public ZimChannelFuture register(ZimChannel channel) {
-        System.out.println(this + " register " + channel);
         ZimChannelFuture regFuture = new ZimChannelFuture(channel);
         channel.register(this, regFuture);
         return regFuture;
@@ -72,7 +71,6 @@ public class ReactorEventLoop implements EventLoop {
 
     private void dispatch(SelectionKey key) {
         if (!key.isValid()) {
-            log.error("key is canceled");
             return;
         }
 
@@ -106,11 +104,9 @@ public class ReactorEventLoop implements EventLoop {
     public void execute(Runnable command) {
         checkRunning();
 
-        if (inEventLoop()) {
-            command.run();
-        } else {
+        registerQueue.offer(command);
 
-            registerQueue.offer(command);
+        if (!inEventLoop()) {
             selector.wakeup();
         }
     }
@@ -122,5 +118,13 @@ public class ReactorEventLoop implements EventLoop {
     @Override
     public Selector selector() {
         return this.selector;
+    }
+
+    @Override
+    public void close() {
+        if (thread != null) {
+            thread.interrupt();
+            selector.wakeup();
+        }
     }
 }

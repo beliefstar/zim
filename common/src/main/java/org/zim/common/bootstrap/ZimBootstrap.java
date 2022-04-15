@@ -85,4 +85,8 @@ public class ZimBootstrap {
             unsafe.connect(socketAddress, connFuture);
         });
     }
+
+    public void close() {
+        group.close();
+    }
 }

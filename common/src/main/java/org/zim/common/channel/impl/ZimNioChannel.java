@@ -142,17 +142,22 @@ public class ZimNioChannel extends AbstractZimChannel {
         @Override
         public void finishConnect() {
             if (connectFuture != null) {
+                boolean connectSuccess = false;
                 try {
                     if (javaChannel().finishConnect()) {
                         beginRead();
 
                         pipeline().fireActive();
 
-                        connectFuture.complete();
+                        connectSuccess = true;
                     }
                 } catch (IOException e) {
-                    e.printStackTrace();
                     close();
+                }
+                if (connectSuccess) {
+                    connectFuture.complete();
+                } else {
+                    connectFuture.failure();
                 }
             }
         }

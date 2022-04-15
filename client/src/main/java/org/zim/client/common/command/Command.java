@@ -1,11 +1,12 @@
 package org.zim.client.common.command;
 
 import lombok.Data;
+import org.zim.common.StringTokenHelper;
 
 @Data
 public class Command {
 
-    public static InnerCommand CURRENT_COMMAND;
+    public static final String COMMAND_PREFIX = ":";
 
     private String name;
 
@@ -14,13 +15,21 @@ public class Command {
     public static Command parse(String line) {
         line = line.trim();
         Command command = new Command();
-        command.setParameter(line);
-        int breakPoint = line.indexOf(" ");
-        if (breakPoint <= 0) {
+
+        if (!line.startsWith(COMMAND_PREFIX)) {
             command.setName(line);
             return command;
         }
-        command.setName(line.substring(0, breakPoint).trim());
+
+        line = line.substring(1);
+
+        StringTokenHelper tokenHelper = new StringTokenHelper(line);
+        if (!tokenHelper.hasNext()) {
+            return command;
+        }
+
+        command.setName(tokenHelper.next());
+        command.setParameter(tokenHelper.remaining());
         return command;
     }
 

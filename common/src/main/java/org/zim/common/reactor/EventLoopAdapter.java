@@ -19,4 +19,9 @@ public abstract class EventLoopAdapter implements EventLoop {
     public void execute(Runnable command) {
         command.run();
     }
+
+    @Override
+    public void close() {
+
+    }
 }

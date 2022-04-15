@@ -75,8 +75,9 @@ public abstract class AbstractZimChannel implements ZimChannel {
     }
 
     @Override
-    public void close() {
+    public ZimChannelFuture close() {
         pipeline().fireClose();
+        return closeFuture;
     }
 
     public SelectionKey selectionKey() {

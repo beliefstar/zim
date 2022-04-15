@@ -19,7 +19,7 @@ public class ZimClientStarter {
         @Override
         public Thread newThread(Runnable r) {
             Thread t = new Thread(r);
-            t.setName("zim-server-nio-exec-" + count.incrementAndGet());
+            t.setName("zim-client-nio-exec-" + count.incrementAndGet());
             return t;
         }
     };
@@ -44,14 +44,16 @@ public class ZimClientStarter {
             System.out.println("bootstrap success");
         }
         future.channel().closeFuture().addListener(f -> {
-            ReconnectHelper.handleReconnect(() -> {
-                ZimChannelFuture sync = bootstrap.connect(new InetSocketAddress("127.0.0.1", 7436)).sync();
-                if (!sync.isSuccess()) {
-                    throw new RuntimeException();
-                }
-            });
+            if (clientHandler.isRunning()) {
+                ReconnectHelper.handleReconnect(() -> {
+                    ZimChannelFuture sync = bootstrap.connect(new InetSocketAddress("127.0.0.1", 7436)).sync();
+                    if (!sync.isSuccess()) {
+                        throw new RuntimeException();
+                    }
+                });
+            }
         });
-
+        clientHandler.closeAction(bootstrap::close);
         clientHandler.listenScan();
     }
 }

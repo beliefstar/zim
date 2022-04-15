@@ -29,4 +29,10 @@ public class ReactorEventLoopGroup {
     public ZimChannelFuture register(ZimChannel channel) {
         return next().register(channel);
     }
+
+    public void close() {
+        for (EventLoop loop : eventLoops) {
+            loop.close();
+        }
+    }
 }

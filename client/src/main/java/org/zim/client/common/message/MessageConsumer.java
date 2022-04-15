@@ -8,7 +8,6 @@ import org.zim.common.EchoHelper;
 import org.zim.protocol.CommandResponseType;
 import org.zim.protocol.RemoteCommand;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -38,7 +37,7 @@ public class MessageConsumer {
 
         map.put(CommandResponseType.QUERY_ALL_OK, (MessageHandler) CommandHelper.QUERY_ALL_USER.getCommandHandler());
 
-        map.put(CommandResponseType.MSG_SEND_OK, (MessageHandler) CommandHelper.MESSAGE.getCommandHandler());
+        map.put(CommandResponseType.MSG_SEND_OK, clientHandler.getMessageChatCommand());
 
         map.put(CommandResponseType.PRIVATE_CHAT_MSG, new ChatMessageHandler());
         map.put(CommandResponseType.GROUP_CHAT_MSG, new ChatMessageHandler());

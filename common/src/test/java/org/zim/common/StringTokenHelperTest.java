@@ -45,4 +45,23 @@ public class StringTokenHelperTest {
         System.out.println(tokenHelper.next());
         System.out.println(tokenHelper.remaining());
     }
+
+    @Test
+    public void test3() {
+        StringTokenHelper tokenHelper = new StringTokenHelper("");
+        System.out.println(tokenHelper.hasNext());
+        System.out.println(tokenHelper.next());
+        System.out.println(tokenHelper.hasNext());
+        System.out.println(tokenHelper.next());
+        System.out.println(tokenHelper.remaining());
+    }
+
+    @Test
+    public void test4() {
+        StringTokenHelper tokenHelper = new StringTokenHelper("user  hello world??  ");
+        System.out.println(tokenHelper.hasNext());
+        System.out.println(tokenHelper.next());
+        System.out.println(tokenHelper.hasNext());
+        System.out.println(tokenHelper.remaining());
+    }
 }

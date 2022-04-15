@@ -1,10 +1,11 @@
 package org.zim.client.common.command.impl;
 
 import org.zim.client.common.ClientHandler;
+import org.zim.client.common.command.Command;
 import org.zim.client.common.command.InnerCommand;
 import org.zim.client.common.message.MessageHandler;
 import org.zim.common.EchoHelper;
-import org.zim.common.StringTokenHelper;
+import org.zim.common.StringChecker;
 import org.zim.common.model.ClientInfo;
 import org.zim.protocol.CommandResponseType;
 import org.zim.protocol.RemoteCommand;
@@ -15,28 +16,23 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 public class MessageChatCommand implements InnerCommand, MessageHandler {
+    public static final String GROUP_ALL = "all";
 
     @Override
-    public int handleCommand(String parameter, ClientHandler clientHandler) {
-        StringTokenHelper tokens = new StringTokenHelper(parameter);
-        String toName;
-        String msg;
-        if (!tokens.hasNext()) {
-            EchoHelper.printSystem("命令格式错误, [-help to]查看");
+    public int handleCommand(Command command, ClientHandler clientHandler) {
+        String toName = command.getName();
+        String msg = command.getParameter();
+
+        if (StringChecker.isEmpty(msg)) {
+            EchoHelper.printSystem("命令格式错误, 内容不可为空");
             return 0;
         }
-        toName = tokens.next();
-        if (!tokens.hasNext()) {
-            EchoHelper.printSystem("命令格式错误, [-help to]查看");
-            return 0;
-        }
-        msg = tokens.remaining();
 
         Map<String, ClientInfo> clientInfoMap = clientHandler.onlineClientInfoMap;
         ClientInfo toClient = clientInfoMap.get(toName);
         if (toClient == null) {
             // maybe group
-            if (toName.equals("all")) {
+            if (toName.equals(GROUP_ALL)) {
                 handleGroupMessage(msg, clientHandler);
                 return 0;
             }

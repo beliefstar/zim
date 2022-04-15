@@ -13,4 +13,6 @@ public interface EventLoop extends Executor {
     ZimChannelFuture register(ZimChannel channel);
 
     boolean inEventLoop();
+
+    void close();
 }

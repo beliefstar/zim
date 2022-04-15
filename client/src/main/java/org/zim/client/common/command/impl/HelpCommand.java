@@ -1,13 +1,16 @@
 package org.zim.client.common.command.impl;
 
 import org.zim.client.common.ClientHandler;
+import org.zim.client.common.command.Command;
 import org.zim.client.common.command.CommandHelper;
 import org.zim.client.common.command.InnerCommand;
 import org.zim.common.EchoHelper;
 
 public class HelpCommand implements InnerCommand {
     @Override
-    public int handleCommand(String parameter, ClientHandler clientHandler) {
+    public int handleCommand(Command command, ClientHandler clientHandler) {
+        String parameter = command.getParameter();
+
         CommandHelper[] values = CommandHelper.values();
         if (parameter != null && !parameter.isEmpty()) {
             for (CommandHelper value : values) {

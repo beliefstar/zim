@@ -4,17 +4,17 @@ import lombok.Getter;
 import org.zim.client.common.ClientHandler;
 import org.zim.client.common.command.impl.EchoCommand;
 import org.zim.client.common.command.impl.HelpCommand;
-import org.zim.client.common.command.impl.MessageChatCommand;
 import org.zim.client.common.command.impl.QueryAllUserCommand;
 import org.zim.common.EchoHelper;
+import org.zim.common.StringChecker;
 
 @Getter
 public enum CommandHelper {
 
-    QUERY_ALL_USER("-listu", "查看所有在线用户",        new QueryAllUserCommand()),
-    ECHO          ("-echo",  "Echo消息",              new EchoCommand()),
-    MESSAGE       (":",      ":[userName] msg 私聊",  new MessageChatCommand()),
-    HELP          ("-help",  "帮助",                  new HelpCommand()),
+    QUERY_ALL_USER("list", "查看所有在线用户",        new QueryAllUserCommand()),
+    ECHO          ("echo",  "Echo消息",              new EchoCommand()),
+//    MESSAGE       (":",      ":[userName] msg 私聊",  new MessageChatCommand()),
+    HELP          ("help",  "帮助",                  new HelpCommand()),
     ;
 
     private final String command;
@@ -31,17 +31,18 @@ public enum CommandHelper {
         Command command = Command.parse(line);
         InnerCommand innerCommand = chooseCommand(command);
         if (innerCommand == null) {
-            EchoHelper.print("command [{}] not found", command.getName());
-            return 0;
+            if (StringChecker.isEmpty(command.getName())) {
+                EchoHelper.print("command [{}] not found", command.getName());
+            }
+            // maybe message
+            return clientHandler.getMessageChatCommand().handleCommand(command, clientHandler);
         }
-        Command.CURRENT_COMMAND = innerCommand;
-        return innerCommand.handleCommand(command.getParameter(), clientHandler);
+        return innerCommand.handleCommand(command, clientHandler);
     }
 
     public static InnerCommand chooseCommand(Command command) {
         for (CommandHelper value : values()) {
             if (command.getName().startsWith(value.getCommand())) {
-                command.stripHead(value.getCommand());
                 return value.getCommandHandler();
             }
         }

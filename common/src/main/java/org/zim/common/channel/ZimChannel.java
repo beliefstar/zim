@@ -11,7 +11,7 @@ public interface ZimChannel {
 
     void write(Object msg);
 
-    void close();
+    ZimChannelFuture close();
 
     ZimChannelFuture closeFuture();
 
