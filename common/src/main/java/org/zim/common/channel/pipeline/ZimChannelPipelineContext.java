@@ -125,6 +125,28 @@ public class ZimChannelPipelineContext {
         }
     }
 
+    public void fireActive() {
+        if (executor != null) {
+            executor.execute(() -> next.invokeActive());
+        } else {
+            next.invokeActive();
+        }
+    }
+
+    public void invokeActive() {
+        if (handler() != null) {
+            try {
+                handler().handleActive(this);
+            } catch (Exception e) {
+                invokeExceptionCaught(e);
+            }
+        } else {
+            if (next != null) {
+                next.invokeActive();
+            }
+        }
+    }
+
     public void fireExceptionCaught(Throwable e) {
         if (executor != null) {
             executor.execute(() -> next.invokeExceptionCaught(e));

@@ -3,7 +3,7 @@ package org.zim.server.nio.single;
 import lombok.extern.slf4j.Slf4j;
 import org.zim.common.ActionHandler;
 import org.zim.common.channel.ZimChannel;
-import org.zim.common.channel.impl.ZimChannelImpl;
+import org.zim.common.channel.impl.ZimNioChannel;
 import org.zim.common.channel.pipeline.ZimChannelHandler;
 
 import java.io.IOException;
@@ -27,7 +27,7 @@ public class Acceptor implements ActionHandler {
             SocketChannel channel = ssc.accept();
             if (channel != null) {
                 log.info("zim server: [main select] accept: {}", channel.getRemoteAddress().toString());
-                ZimChannel zimChannel = new ZimChannelImpl(channel);
+                ZimChannel zimChannel = new ZimNioChannel(channel);
 
                 ActionHandler actionHandler = new Handler(zimChannel);
 

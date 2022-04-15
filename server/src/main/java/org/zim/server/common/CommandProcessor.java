@@ -51,4 +51,9 @@ public class CommandProcessor implements ZimChannelHandler {
     public void handleRead(ZimChannelPipelineContext ctx, Object msg) throws Exception {
         process((RemoteCommand) msg, ctx.channel());
     }
+
+    @Override
+    public void handleRegister(ZimChannelPipelineContext ctx) throws Exception {
+        System.out.println("accept " + ctx.channel().remoteAddress());
+    }
 }

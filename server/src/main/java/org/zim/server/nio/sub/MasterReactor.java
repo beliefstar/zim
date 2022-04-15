@@ -2,7 +2,7 @@ package org.zim.server.nio.sub;
 
 
 import lombok.extern.slf4j.Slf4j;
-import org.zim.common.channel.impl.ZimChannelImpl;
+import org.zim.common.channel.impl.ZimNioChannel;
 import org.zim.common.channel.pipeline.ZimChannelHandler;
 
 import java.io.IOException;
@@ -87,7 +87,7 @@ public class MasterReactor {
             log.info("zim server: [main select] accept: {}", channel.getRemoteAddress());
 
             channel.configureBlocking(false);
-            ZimChannelImpl zimChannel = new ZimChannelImpl(channel);
+            ZimNioChannel zimChannel = new ZimNioChannel(channel);
             zimChannel.pipeline().addLast(this.channelHandler);
 
             chooseSubReactor().register(zimChannel);

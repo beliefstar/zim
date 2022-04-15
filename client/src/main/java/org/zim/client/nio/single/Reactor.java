@@ -3,8 +3,10 @@ package org.zim.client.nio.single;
 import org.zim.client.common.ReconnectHelper;
 import org.zim.common.EchoHelper;
 import org.zim.common.channel.ZimChannel;
-import org.zim.common.channel.impl.ZimChannelImpl;
+import org.zim.common.channel.ZimChannelFuture;
+import org.zim.common.channel.impl.ZimNioChannel;
 import org.zim.common.channel.pipeline.ZimChannelHandler;
+import org.zim.common.reactor.EventLoopAdapter;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -63,10 +65,10 @@ public class Reactor {
         boolean b = sc.connect(new InetSocketAddress(host, port));
         sc.configureBlocking(false);
         EchoHelper.printSystemError("connect: " + b);
-        ZimChannel channel = new ZimChannelImpl(sc);
+        ZimChannel channel = new ZimNioChannel(sc);
         channel.pipeline().addLast(channelHandler);
 
-        channel.closeFuture().addListener(() -> ReconnectHelper.handleReconnect(this::connect));
+        channel.closeFuture().addListener(future -> ReconnectHelper.handleReconnect(this::connect));
 
         registerQueue.offer(channel);
         selector.wakeup();
@@ -107,7 +109,14 @@ public class Reactor {
         while (!registerQueue.isEmpty()) {
             ZimChannel channel = registerQueue.poll();
 
-            channel.register(selector);
+            ZimChannelFuture future = new ZimChannelFuture(channel);
+
+            channel.register(new EventLoopAdapter() {
+                @Override
+                public Selector selector() {
+                    return selector;
+                }
+            }, future);
         }
     }
 }

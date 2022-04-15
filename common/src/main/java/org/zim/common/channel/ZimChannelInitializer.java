@@ -11,7 +11,7 @@ public abstract class ZimChannelInitializer implements ZimChannelHandler {
 
     private final Set<ZimChannel> initSet = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
-    public abstract void init(ZimChannel channel);
+    public abstract void init(ZimChannel ch);
 
     @Override
     public void handleRegister(ZimChannelPipelineContext ctx) {

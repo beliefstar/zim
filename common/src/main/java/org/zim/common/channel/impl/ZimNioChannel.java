@@ -5,13 +5,16 @@ package org.zim.common.channel.impl;
 import lombok.extern.slf4j.Slf4j;
 import org.zim.common.channel.AbstractZimChannel;
 import org.zim.common.channel.UnCompleteException;
+import org.zim.common.channel.ZimChannelFuture;
 
 import java.io.IOException;
+import java.net.SocketAddress;
 import java.nio.ByteBuffer;
+import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 
 @Slf4j
-public class ZimChannelImpl extends AbstractZimChannel {
+public class ZimNioChannel extends AbstractZimChannel {
 
     private final ByteBuffer readBuffer = ByteBuffer.allocate(1024);
     private ByteBuffer readData;
@@ -19,8 +22,20 @@ public class ZimChannelImpl extends AbstractZimChannel {
 
     private int readSize = -1;
 
-    public ZimChannelImpl(SocketChannel channel) {
-        super(channel);
+    private static SocketChannel newSocket() {
+        try {
+            return SocketChannel.open();
+        } catch (IOException e) {
+            throw new RuntimeException();
+        }
+    }
+
+    public ZimNioChannel() {
+        this(newSocket());
+    }
+
+    public ZimNioChannel(SocketChannel channel) {
+        super(channel, SelectionKey.OP_READ | SelectionKey.OP_WRITE);
     }
 
     private void handleRead(ByteBuffer buffer) throws IOException {
@@ -105,6 +120,57 @@ public class ZimChannelImpl extends AbstractZimChannel {
 
     private final class ZimUnsafeImpl implements Unsafe {
 
+        private ZimChannelFuture connectFuture;
+
+        @Override
+        public void connect(SocketAddress socketAddress, ZimChannelFuture future) {
+            try {
+                boolean connect = javaChannel().connect(socketAddress);
+
+                if (!connect) {
+                    selectionKey().interestOps(SelectionKey.OP_CONNECT);
+                    connectFuture = future;
+                } else {
+                    future.complete();
+                }
+            } catch (IOException e) {
+                close();
+                future.failure();
+            }
+        }
+
+        @Override
+        public void finishConnect() {
+            if (connectFuture != null) {
+                try {
+                    if (javaChannel().finishConnect()) {
+                        beginRead();
+
+                        pipeline().fireActive();
+
+                        connectFuture.complete();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    close();
+                }
+            }
+        }
+
+        @Override
+        public SocketAddress localAddress() {
+            return null;
+        }
+
+        @Override
+        public SocketAddress remoteAddress() {
+            try {
+                return javaChannel().getRemoteAddress();
+            } catch (IOException e) {
+                throw new RuntimeException();
+            }
+        }
+
         @Override
         public void read() {
             ByteBuffer buffer = readBuffer;
@@ -186,10 +252,11 @@ public class ZimChannelImpl extends AbstractZimChannel {
             try {
                 selectionKey().cancel();
                 javaChannel().close();
+
+                closeFuture().complete();
             } catch (IOException e) {
                 log.error("close socket error: [{}]", e.getMessage());
-            } finally {
-                closeFuture().closeComplete();
+                closeFuture().failure();
             }
         }
     }

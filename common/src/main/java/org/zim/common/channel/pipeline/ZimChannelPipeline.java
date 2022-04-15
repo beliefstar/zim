@@ -25,6 +25,10 @@ public class ZimChannelPipeline {
         head.fireRegister();
     }
 
+    public void fireActive() {
+        head.fireActive();
+    }
+
     public void fireRead(Object command) {
         head.fireRead(command);
     }
@@ -81,6 +85,11 @@ public class ZimChannelPipeline {
         @Override
         protected ZimChannelHandler handler() {
             return this;
+        }
+
+        @Override
+        public void handleActive(ZimChannelPipelineContext ctx) throws Exception {
+            ctx.fireActive();
         }
 
         @Override

@@ -28,6 +28,7 @@ public class ReconnectHelper {
             return;
         } catch (Exception ignore) {
         }
+        System.out.println("--");
         scheduledExecutorService.schedule(this::reconnect, 10, TimeUnit.SECONDS);
     }
 

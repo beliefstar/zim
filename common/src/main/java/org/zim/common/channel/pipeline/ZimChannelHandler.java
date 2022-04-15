@@ -6,6 +6,10 @@ public interface ZimChannelHandler {
         ctx.fireRegister();
     }
 
+    default void handleActive(ZimChannelPipelineContext ctx) throws Exception {
+        ctx.fireActive();
+    }
+
     default void handleRead(ZimChannelPipelineContext ctx, Object msg) throws Exception {
         ctx.fireRead(msg);
     }

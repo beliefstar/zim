@@ -32,7 +32,7 @@ public class AccountService implements ZimChannelHandler {
         userName2UserIdMap.put(serverClientInfo.getUserName(), serverClientInfo);
         channelClientInfoMap.put(channel, serverClientInfo);
 
-        channel.closeFuture().addListener(() -> {
+        channel.closeFuture().addListener(future -> {
             ServerClientInfo info = channelClientInfoMap.get(channel);
             if (info != null) {
                 log.info("user [{}] offline", info.getUserName());
