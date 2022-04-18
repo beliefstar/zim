@@ -15,12 +15,12 @@ public class EchoHelper {
     }
 
     public static void printMessage(String sender, String message) {
-        String msg = String.format("[%s]%s: %s%n", date(), Color.BLUE.display(sender, "4"), message);
+        String msg = String.format("[%s] %s : %s%n", Color.GRAY.display(date()), Color.BLUE.display(sender, "4"), message);
         System.out.print(msg);
     }
 
     public static void printGroupMessage(String sender, String message) {
-        String msg = String.format("[%s]%s%s: %s%n", date(), Color.YELLOW.display("[GROUP]"), Color.BLUE.display(sender, "4"), message);
+        String msg = String.format("[%s]%s %s : %s%n", Color.GRAY.display(date()), Color.YELLOW.display("[GROUP]"), Color.BLUE.display(sender, "4"), message);
         System.out.print(msg);
     }
 
@@ -46,6 +46,7 @@ public class EchoHelper {
         System.out.println("\033[34;4mxxxxx\033[0m");
         System.out.println("\033[35;4mxxxxx\033[0m");
         System.out.println("\033[36;4mxxxxx\033[0m");
+        System.out.println("\033[37;4mxxxxx\033[0m");
     }
 
     private static enum Color {
@@ -55,6 +56,7 @@ public class EchoHelper {
         YELLOW("33"),
         BLUE("34"),
         PURPLE("35"),
+        GRAY("37"),
         ;
 
         private final String code;

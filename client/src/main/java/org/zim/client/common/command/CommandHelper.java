@@ -11,9 +11,8 @@ import org.zim.common.StringChecker;
 @Getter
 public enum CommandHelper {
 
-    QUERY_ALL_USER("list", "查看所有在线用户",        new QueryAllUserCommand()),
+    QUERY_ALL_USER("list", "查看所有在线用户",         new QueryAllUserCommand()),
     ECHO          ("echo",  "Echo消息",              new EchoCommand()),
-//    MESSAGE       (":",      ":[userName] msg 私聊",  new MessageChatCommand()),
     HELP          ("help",  "帮助",                  new HelpCommand()),
     ;
 

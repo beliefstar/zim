@@ -76,7 +76,7 @@ public abstract class AbstractZimChannel implements ZimChannel {
 
     @Override
     public ZimChannelFuture close() {
-        pipeline().fireClose();
+        eventLoop().execute(() -> pipeline().fireClose());
         return closeFuture;
     }
 

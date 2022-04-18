@@ -1,6 +1,6 @@
 package org.zim.common.channel;
 
-public interface ZimChannelCloseListener {
+public interface ZimChannelFutureListener {
 
     void onComplete(ZimChannelFuture future);
 }

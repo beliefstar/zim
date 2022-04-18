@@ -1,9 +1,11 @@
 package org.zim.client.common.scan.pipeline;
 
+import lombok.extern.slf4j.Slf4j;
 import org.zim.client.common.ClientHandler;
 import org.zim.client.common.scan.ScanHandler;
 import org.zim.common.EchoHelper;
 
+@Slf4j
 public class ExitHandler implements ScanHandler {
     public static final String EXIT_COMMAND = "exit";
 
@@ -18,7 +20,11 @@ public class ExitHandler implements ScanHandler {
     @Override
     public boolean handle(String command) {
         if (processing && "Y".equalsIgnoreCase(command)) {
-            clientHandler.closeForce();
+            try {
+                clientHandler.closeForce().sync();
+            } catch (InterruptedException e) {
+                log.error("exit error", e);
+            }
             return false;
         }
         else if (EXIT_COMMAND.equals(command)) {

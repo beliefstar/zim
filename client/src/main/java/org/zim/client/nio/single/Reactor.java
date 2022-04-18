@@ -1,6 +1,5 @@
 package org.zim.client.nio.single;
 
-import org.zim.client.common.ReconnectHelper;
 import org.zim.common.EchoHelper;
 import org.zim.common.channel.ZimChannel;
 import org.zim.common.channel.ZimChannelFuture;
@@ -41,9 +40,9 @@ public class Reactor {
         this.channelHandler = channelHandler;
     }
 
-    public void start() throws Exception {
+    public ZimChannel start() throws Exception {
         selector = Selector.open();
-        connect();
+        ZimChannel channel = connect();
 
         if (selectorThread == null) {
             Thread t = new Thread(() -> {
@@ -58,17 +57,19 @@ public class Reactor {
             t.start();
             selectorThread = t;
         }
+        return channel;
     }
 
-    private ZimChannel connect() throws IOException {
+    public ZimChannel connect() throws IOException {
         SocketChannel sc = SocketChannel.open();
         boolean b = sc.connect(new InetSocketAddress(host, port));
         sc.configureBlocking(false);
-        EchoHelper.printSystemError("connect: " + b);
+        if (!b) {
+            throw new RuntimeException("connect fail");
+        }
+        EchoHelper.printSystem("connect success");
         ZimChannel channel = new ZimNioChannel(sc);
         channel.pipeline().addLast(channelHandler);
-
-        channel.closeFuture().addListener(future -> ReconnectHelper.handleReconnect(this::connect));
 
         registerQueue.offer(channel);
         selector.wakeup();
@@ -77,7 +78,7 @@ public class Reactor {
     }
 
     private void select() throws IOException {
-        while (true) {
+        while (!Thread.interrupted()) {
             int select = selector.select(5000);
             if (select > 0) {
                 Iterator<SelectionKey> iterator = selector.selectedKeys().iterator();
@@ -117,6 +118,19 @@ public class Reactor {
                     return selector;
                 }
             }, future);
+
+            future.addListener(f -> {
+                if (f.isSuccess()) {
+                    channel.pipeline().fireActive();
+                }
+            });
+        }
+    }
+
+    public void close() {
+        if (selectorThread != null) {
+            selectorThread.interrupt();
+            selector.wakeup();
         }
     }
 }

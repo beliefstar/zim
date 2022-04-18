@@ -1,11 +1,13 @@
 package org.zim.client.common;
 
+import lombok.extern.slf4j.Slf4j;
 import org.zim.client.common.command.impl.MessageChatCommand;
 import org.zim.client.common.message.MessageConsumer;
 import org.zim.client.common.scan.ConsoleScanner;
 import org.zim.client.common.scan.pipeline.RegisterHandler;
 import org.zim.common.EchoHelper;
 import org.zim.common.channel.ZimChannel;
+import org.zim.common.channel.ZimChannelFuture;
 import org.zim.common.channel.pipeline.ZimChannelHandler;
 import org.zim.common.channel.pipeline.ZimChannelPipelineContext;
 import org.zim.common.model.ClientInfo;
@@ -17,14 +19,14 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+@Slf4j
 public class ClientHandler implements ZimChannelHandler {
     public static ClientHandler INSTANCE;
 
     private final AtomicBoolean state = new AtomicBoolean(false);
-    private Runnable closeAction;
     private ZimChannel channel;
 
-    private ExecutorService executor;
+    private final ExecutorService executor;
 
     private Long userId;
     private String userName;
@@ -55,10 +57,11 @@ public class ClientHandler implements ZimChannelHandler {
     }
 
     public void listenScan() {
-        state.set(true);
+        if (state.compareAndSet(false, true)) {
 
-        registerHandler.echoNotice();
-        consoleScanner.listen();
+            registerHandler.echoNotice();
+            consoleScanner.listen();
+        }
     }
 
     public ZimChannel getChannel() {
@@ -116,20 +119,16 @@ public class ClientHandler implements ZimChannelHandler {
         this.userName = userName;
     }
 
-    public void closeAction(Runnable action) {
-        closeAction = action;
-    }
-
-    public void closeForce() {
-        state.set(false);
-
-        consoleScanner.close();
-        try {
-            channel.close().addListener(f -> executor.shutdown()).sync();
-        } catch (InterruptedException e) {
+    public ZimChannelFuture closeForce() {
+        if (!state.compareAndSet(true, false)) {
+            throw new RuntimeException("client already closed");
         }
-        closeAction.run();
-        EchoHelper.printSystem("退出成功!");
+
+        return channel.close().addListener(f -> {
+            consoleScanner.close();
+            executor.shutdown();
+            EchoHelper.printSystem("退出成功!");
+        });
     }
 
     public boolean isRunning() {

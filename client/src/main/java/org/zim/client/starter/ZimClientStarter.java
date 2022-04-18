@@ -3,7 +3,9 @@ package org.zim.client.starter;
 import org.zim.client.common.ChannelInit;
 import org.zim.client.common.ClientHandler;
 import org.zim.client.common.ReconnectHelper;
+import org.zim.client.nio.single.Reactor;
 import org.zim.common.bootstrap.ZimBootstrap;
+import org.zim.common.channel.ZimChannel;
 import org.zim.common.channel.ZimChannelFuture;
 import org.zim.common.channel.impl.ZimNioChannel;
 import org.zim.common.reactor.ReactorEventLoopGroup;
@@ -14,7 +16,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class ZimClientStarter {
 
-    private static ThreadFactory threadFactory = new ThreadFactory() {
+    private static final ThreadFactory THREAD_FACTORY = new ThreadFactory() {
         final AtomicInteger count = new AtomicInteger();
         @Override
         public Thread newThread(Runnable r) {
@@ -29,10 +31,38 @@ public class ZimClientStarter {
         ClientHandler clientHandler = new ClientHandler();
 
         // reactor
-//        new Reactor("127.0.0.1", 7436, new ChannelInit(clientHandler, true)).start();
+        startWithSingleReactor(clientHandler);
 
         // 事件循环
-        ReactorEventLoopGroup workGroup = new ReactorEventLoopGroup(1, threadFactory);
+//        startWithNioEventLoop(clientHandler);
+
+        clientHandler.listenScan();
+    }
+
+    /**
+     * reactor
+     * @param clientHandler
+     * @throws Exception
+     */
+    private static void startWithSingleReactor(ClientHandler clientHandler) throws Exception {
+        Reactor reactor = new Reactor("127.0.0.1", 7436, new ChannelInit(clientHandler, true));
+        ZimChannel channel = reactor.start();
+
+        channel.closeFuture().addListener(future -> {
+            if (clientHandler.isRunning()) {
+                ReconnectHelper.handleReconnect(reactor::connect);
+            } else {
+                reactor.close();
+            }
+        });
+    }
+
+    /**
+     * 事件循环
+     * @param clientHandler
+     */
+    private static void startWithNioEventLoop(ClientHandler clientHandler) throws InterruptedException {
+        ReactorEventLoopGroup workGroup = new ReactorEventLoopGroup(1, THREAD_FACTORY);
 
         ZimBootstrap bootstrap = new ZimBootstrap();
         bootstrap.group(workGroup)
@@ -51,9 +81,9 @@ public class ZimClientStarter {
                         throw new RuntimeException();
                     }
                 });
+            } else {
+                bootstrap.close();
             }
         });
-        clientHandler.closeAction(bootstrap::close);
-        clientHandler.listenScan();
     }
 }
