@@ -15,11 +15,10 @@ import java.util.List;
 public class QueryAllUserCommand implements InnerCommand, MessageHandler {
 
     @Override
-    public int handleCommand(Command console, ClientHandler clientHandler) {
+    public void handleCommand(Command console, ClientHandler clientHandler) {
         RemoteCommand command = new RemoteCommand();
         command.setCode(CommandRequestType.QUERY_ALL_USER.getCode());
         clientHandler.getChannel().write(command);
-        return 0;
     }
 
     @Override

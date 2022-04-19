@@ -5,15 +5,17 @@ import org.zim.client.common.ClientHandler;
 import org.zim.client.common.command.impl.EchoCommand;
 import org.zim.client.common.command.impl.HelpCommand;
 import org.zim.client.common.command.impl.QueryAllUserCommand;
+import org.zim.client.common.command.impl.RenameCommand;
 import org.zim.common.EchoHelper;
 import org.zim.common.StringChecker;
 
 @Getter
 public enum CommandHelper {
 
-    QUERY_ALL_USER("list", "查看所有在线用户",         new QueryAllUserCommand()),
-    ECHO          ("echo",  "Echo消息",              new EchoCommand()),
-    HELP          ("help",  "帮助",                  new HelpCommand()),
+    QUERY_ALL_USER("list",   "查看所有在线用户",         new QueryAllUserCommand()),
+    ECHO          ("echo",    "Echo消息",              new EchoCommand()),
+    HELP          ("help",    "帮助",                  new HelpCommand()),
+    RENAME        ("rename",  "重置昵称",               new RenameCommand()),
     ;
 
     private final String command;
@@ -26,17 +28,19 @@ public enum CommandHelper {
         this.commandHandler = commandHandler;
     }
 
-    public static int fireCommand(String line, ClientHandler clientHandler) {
+    public static void fireCommand(String line, ClientHandler clientHandler) {
         Command command = Command.parse(line);
         InnerCommand innerCommand = chooseCommand(command);
         if (innerCommand == null) {
             if (StringChecker.isEmpty(command.getName())) {
                 EchoHelper.print("command [{}] not found", command.getName());
+                return;
             }
             // maybe message
-            return clientHandler.getMessageChatCommand().handleCommand(command, clientHandler);
+            clientHandler.getMessageChatCommand().handleCommand(command, clientHandler);
+            return;
         }
-        return innerCommand.handleCommand(command, clientHandler);
+        innerCommand.handleCommand(command, clientHandler);
     }
 
     public static InnerCommand chooseCommand(Command command) {

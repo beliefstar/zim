@@ -1,8 +1,8 @@
 package org.zim.client.common;
 
+import org.zim.client.common.handler.ClientChannelHandler;
 import org.zim.common.channel.ZimChannel;
 import org.zim.common.channel.ZimChannelInitializer;
-import org.zim.common.channel.pipeline.ZimChannelHandler;
 import org.zim.common.channel.pipeline.ZimChannelPipeline;
 import org.zim.protocol.RemoteCommandSerializer;
 
@@ -15,8 +15,6 @@ public class ChannelInit extends ZimChannelInitializer {
 
     private final boolean useParallel;
 
-    private static final ZimChannelHandler remoteCommandSerializer = new RemoteCommandSerializer();
-
     public ChannelInit(ClientHandler clientHandler, boolean useParallel) {
         this.clientHandler = clientHandler;
         this.useParallel = useParallel;
@@ -27,8 +25,8 @@ public class ChannelInit extends ZimChannelInitializer {
         ZimChannelPipeline pipeline = channel.pipeline();
         Executor executor = useParallel ? clientHandler.getExecutor() : null;
         pipeline.addLast(executor,
-                remoteCommandSerializer,
-                clientHandler);
+                new RemoteCommandSerializer(),
+                new ClientChannelHandler(clientHandler));
     }
 
 }

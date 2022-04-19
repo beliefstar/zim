@@ -8,7 +8,7 @@ import org.zim.common.EchoHelper;
 
 public class HelpCommand implements InnerCommand {
     @Override
-    public int handleCommand(Command command, ClientHandler clientHandler) {
+    public void handleCommand(Command command, ClientHandler clientHandler) {
         String parameter = command.getParameter();
 
         CommandHelper[] values = CommandHelper.values();
@@ -16,7 +16,7 @@ public class HelpCommand implements InnerCommand {
             for (CommandHelper value : values) {
                 if (parameter.equals(value.getCommand())) {
                     EchoHelper.print(value.getDesc());
-                    return 0;
+                    return;
                 }
             }
             EchoHelper.print("command [{}] not found", parameter);
@@ -25,6 +25,5 @@ public class HelpCommand implements InnerCommand {
                 EchoHelper.print("[{}] : {}", value.getCommand(), value.getDesc());
             }
         }
-        return 0;
     }
 }

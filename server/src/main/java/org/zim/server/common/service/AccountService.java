@@ -2,94 +2,99 @@ package org.zim.server.common.service;
 
 
 import lombok.extern.slf4j.Slf4j;
+import org.zim.common.SnowFlakeGenerator;
 import org.zim.common.channel.ZimChannel;
-import org.zim.common.channel.pipeline.ZimChannelHandler;
-import org.zim.protocol.CommandResponseType;
-import org.zim.protocol.MessageConstants;
 import org.zim.protocol.RemoteCommand;
 import org.zim.server.common.model.ServerClientInfo;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
-public class AccountService implements ZimChannelHandler {
+public class AccountService {
 
-    private final Map<Long, ServerClientInfo> userId2UserNameMap = new ConcurrentHashMap<>();
-    private final Map<String, ServerClientInfo> userName2UserIdMap = new ConcurrentHashMap<>();
-    private final Map<ZimChannel, ServerClientInfo> channelClientInfoMap = new ConcurrentHashMap<>();
+    private final SnowFlakeGenerator snowFlakeGenerator = new SnowFlakeGenerator();
+
+    private final Map<Long, ServerClientInfo> userIdMap = new ConcurrentHashMap<>();
+    private final Map<ZimChannel, ServerClientInfo> channelMap = new ConcurrentHashMap<>();
+    private final Set<String> userNames = new HashSet<>();
 
     public boolean register(ServerClientInfo serverClientInfo) {
-        if (userId2UserNameMap.containsKey(serverClientInfo.getUserId())
-                || userName2UserIdMap.containsKey(serverClientInfo.getUserName())) {
+        if (channelMap.containsKey(serverClientInfo.getZimChannel())) {
             return false;
         }
+        Long userId = snowFlakeGenerator.nextId();
+        String userName = serverClientInfo.getUserName();
+        if (!userNames.add(userName)) {
+            return false;
+        }
+        serverClientInfo.setUserId(userId);
         ZimChannel channel = serverClientInfo.getZimChannel();
 
-        userId2UserNameMap.put(serverClientInfo.getUserId(), serverClientInfo);
-        userName2UserIdMap.put(serverClientInfo.getUserName(), serverClientInfo);
-        channelClientInfoMap.put(channel, serverClientInfo);
-
-        channel.closeFuture().addListener(future -> {
-            ServerClientInfo info = channelClientInfoMap.get(channel);
-            if (info != null) {
-                log.info("user [{}] offline", info.getUserName());
-                userId2UserNameMap.remove(info.getUserId());
-                userName2UserIdMap.remove(info.getUserName());
-                channelClientInfoMap.remove(channel);
-
-                // offline broadcast
-                broadcastOffline(info);
-            }
-        });
-        log.info("user [{}] online", serverClientInfo.getUserName());
+        userIdMap.put(userId, serverClientInfo);
+        channelMap.put(channel, serverClientInfo);
         return true;
     }
 
+    public boolean rename(ServerClientInfo clientInfo) {
+        ServerClientInfo info = userIdMap.get(clientInfo.getUserId());
+        if (info == null) {
+            return false;
+        }
+        if (info.getZimChannel() != clientInfo.getZimChannel()) {
+            return false;
+        }
+        if (info.getUserName().equals(clientInfo.getUserName())) {
+            return false;
+        }
+        if (!checkUserName(clientInfo.getUserName())) {
+            return false;
+        }
+        userNames.add(clientInfo.getUserName());
+        userNames.remove(info.getUserName());
+        info.setUserName(clientInfo.getUserName());
+        return true;
+    }
+
+    public boolean checkUserName(String name) {
+        return !userNames.contains(name);
+    }
+
     public List<ServerClientInfo> queryAllUser() {
-        List<ServerClientInfo> list = new ArrayList<>(userName2UserIdMap.size());
-        for (Map.Entry<String, ServerClientInfo> entry : userName2UserIdMap.entrySet()) {
+        List<ServerClientInfo> list = new ArrayList<>(userIdMap.size());
+        for (Map.Entry<Long, ServerClientInfo> entry : userIdMap.entrySet()) {
             list.add(entry.getValue());
         }
         return list;
     }
 
-    public void broadcastOnline(ServerClientInfo clientInfo) {
-        RemoteCommand remoteCommand = RemoteCommand.createResponseCommand(CommandResponseType.BROADCAST_ONLINE);
-        remoteCommand.putExtendField(MessageConstants.TO, Long.toString(clientInfo.getUserId()));
-        remoteCommand.putExtendField(MessageConstants.TO_NAME, clientInfo.getUserName());
+    public void broadcast(RemoteCommand command, ServerClientInfo... excludes) {
+        Set<Long> excludeId = new HashSet<>();
+        if (excludes != null && excludes.length > 0) {
+            for (ServerClientInfo exclude : excludes) {
+                excludeId.add(exclude.getUserId());
+            }
+        }
 
         List<ServerClientInfo> infos = queryAllUser();
         for (ServerClientInfo info : infos) {
-            if (!info.getUserId().equals(clientInfo.getUserId())) {
-                info.getZimChannel().write(remoteCommand);
-            }
-        }
-    }
-
-    private void broadcastOffline(ServerClientInfo clientInfo) {
-        RemoteCommand command = RemoteCommand.createResponseCommand(CommandResponseType.BROADCAST_OFFLINE);
-        command.putExtendField(MessageConstants.TO, Long.toString(clientInfo.getUserId()));
-        command.putExtendField(MessageConstants.TO_NAME, clientInfo.getUserName());
-
-        for (ZimChannel zimChannel : channelClientInfoMap.keySet()) {
-            if (!zimChannel.equals(clientInfo.getZimChannel())) {
-                zimChannel.write(command);
+            if (!excludeId.contains(info.getUserId())) {
+                info.getZimChannel().write(command);
             }
         }
     }
 
     public ServerClientInfo queryById(Long userId) {
-        return userId2UserNameMap.get(userId);
-    }
-
-    public ServerClientInfo queryByName(String userName) {
-        return userName2UserIdMap.get(userName);
+        return userIdMap.get(userId);
     }
 
     public ServerClientInfo queryByChannel(ZimChannel zimChannel) {
-        return channelClientInfoMap.get(zimChannel);
+        return channelMap.get(zimChannel);
+    }
+
+    public void removeClient(ServerClientInfo clientInfo) {
+        userIdMap.remove(clientInfo.getUserId());
+        userNames.remove(clientInfo.getUserName());
+        channelMap.remove(clientInfo.getZimChannel());
     }
 }

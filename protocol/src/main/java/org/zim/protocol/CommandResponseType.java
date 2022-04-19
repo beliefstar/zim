@@ -9,9 +9,13 @@ public enum CommandResponseType {
 
     REGISTER_ERROR((short) 11),
 
-    BROADCAST_ONLINE((short) 12),
+    RENAME_OK((short) 12),
 
-    BROADCAST_OFFLINE((short) 13),
+    BROADCAST_ONLINE((short) 101),
+
+    BROADCAST_OFFLINE((short) 102),
+
+    BROADCAST_RENAME((short) 103),
 
     MSG_SEND_OK((short) 20),
 

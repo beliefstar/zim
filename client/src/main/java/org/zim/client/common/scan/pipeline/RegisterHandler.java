@@ -13,6 +13,8 @@ import org.zim.protocol.command.RegisterCommand;
 
 import java.util.List;
 
+import static org.zim.protocol.MessageConstants.*;
+
 public class RegisterHandler implements ScanHandler, MessageHandler {
 
     private final ClientHandler clientHandler;
@@ -34,7 +36,6 @@ public class RegisterHandler implements ScanHandler, MessageHandler {
             return true;
         }
         if (!sendRegister) {
-            clientHandler.setUserId(System.currentTimeMillis());
             clientHandler.setUserName(line);
 
             remoteRegister();
@@ -56,7 +57,6 @@ public class RegisterHandler implements ScanHandler, MessageHandler {
 
     public void remoteRegister() {
         RegisterCommand command = new RegisterCommand();
-        command.setUserId(clientHandler.getUserId());
         command.setUserName(clientHandler.getUserName());
 
         clientHandler.getChannel().write(command);
@@ -75,6 +75,11 @@ public class RegisterHandler implements ScanHandler, MessageHandler {
                 List<ClientInfo> clientInfos = JSON.parseArray(response.getBodyString(), ClientInfo.class);
 
                 clientHandler.updateOnlineUser(clientInfos);
+
+                Long userId = Long.parseLong(response.getExtendField(USER_ID));
+
+                clientHandler.setUserId(userId);
+
                 EchoHelper.printSystem("online success! username is [" + clientHandler.getUserName() + "], welcome to zim!");
                 markRegistered();
                 break;

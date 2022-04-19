@@ -19,13 +19,13 @@ public class MessageChatCommand implements InnerCommand, MessageHandler {
     public static final String GROUP_ALL = "all";
 
     @Override
-    public int handleCommand(Command command, ClientHandler clientHandler) {
+    public void handleCommand(Command command, ClientHandler clientHandler) {
         String toName = command.getName();
         String msg = command.getParameter();
 
         if (StringChecker.isEmpty(msg)) {
             EchoHelper.printSystem("命令格式错误, 内容不可为空");
-            return 0;
+            return;
         }
 
         Map<String, ClientInfo> clientInfoMap = clientHandler.onlineClientInfoMap;
@@ -34,15 +34,14 @@ public class MessageChatCommand implements InnerCommand, MessageHandler {
             // maybe group
             if (toName.equals(GROUP_ALL)) {
                 handleGroupMessage(msg, clientHandler);
-                return 0;
+                return;
             }
 
             EchoHelper.printSystem("用户[{}]不存在", toName);
-            return 0;
+            return;
         }
 
         handlePrivateMessage(msg, toClient, clientHandler);
-        return 0;
     }
 
     @Override

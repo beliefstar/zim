@@ -35,6 +35,9 @@ public class MessageConsumer {
         map.put(CommandResponseType.BROADCAST_ONLINE, clientHandler.getRegisterHandler());
         map.put(CommandResponseType.BROADCAST_OFFLINE, clientHandler.getRegisterHandler());
 
+        map.put(CommandResponseType.RENAME_OK, (MessageHandler) CommandHelper.RENAME.getCommandHandler());
+        map.put(CommandResponseType.BROADCAST_RENAME, (MessageHandler) CommandHelper.RENAME.getCommandHandler());
+
         map.put(CommandResponseType.QUERY_ALL_OK, (MessageHandler) CommandHelper.QUERY_ALL_USER.getCommandHandler());
 
         map.put(CommandResponseType.MSG_SEND_OK, clientHandler.getMessageChatCommand());

@@ -13,14 +13,13 @@ import java.nio.charset.StandardCharsets;
 public class EchoCommand implements InnerCommand, MessageHandler {
 
     @Override
-    public int handleCommand(Command console, ClientHandler clientHandler) {
+    public void handleCommand(Command console, ClientHandler clientHandler) {
         String parameter = console.getParameter();
 
         RemoteCommand command = new RemoteCommand();
         command.setCode(CommandRequestType.ECHO.getCode());
         command.setBody(parameter.getBytes(StandardCharsets.UTF_8));
         clientHandler.getChannel().write(command);
-        return 0;
     }
 
     @Override

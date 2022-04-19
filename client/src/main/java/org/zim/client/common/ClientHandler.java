@@ -9,9 +9,7 @@ import org.zim.common.EchoHelper;
 import org.zim.common.channel.ZimChannel;
 import org.zim.common.channel.ZimChannelFuture;
 import org.zim.common.channel.pipeline.ZimChannelHandler;
-import org.zim.common.channel.pipeline.ZimChannelPipelineContext;
 import org.zim.common.model.ClientInfo;
-import org.zim.protocol.RemoteCommand;
 
 import java.util.List;
 import java.util.Map;
@@ -72,19 +70,16 @@ public class ClientHandler implements ZimChannelHandler {
         return executor;
     }
 
-    @Override
-    public void handleActive(ZimChannelPipelineContext ctx) throws Exception {
-        this.channel = ctx.channel();
+    public void setChannel(ZimChannel channel) {
+        this.channel = channel;
         if (registerHandler.isRegistered()) {
             registerHandler.markUnRegistered();
             registerHandler.remoteRegister();
         }
-        ctx.fireActive();
     }
 
-    @Override
-    public void handleRead(ZimChannelPipelineContext ctx, Object msg) throws Exception {
-        messageConsumer.handle((RemoteCommand) msg);
+    public MessageConsumer getMessageConsumer() {
+        return messageConsumer;
     }
 
     public RegisterHandler getRegisterHandler() {
@@ -124,8 +119,9 @@ public class ClientHandler implements ZimChannelHandler {
             throw new RuntimeException("client already closed");
         }
 
+        consoleScanner.close();
+
         return channel.close().addListener(f -> {
-            consoleScanner.close();
             executor.shutdown();
             EchoHelper.printSystem("退出成功!");
         });

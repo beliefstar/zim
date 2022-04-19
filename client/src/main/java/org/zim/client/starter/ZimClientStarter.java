@@ -31,10 +31,10 @@ public class ZimClientStarter {
         ClientHandler clientHandler = new ClientHandler();
 
         // reactor
-        startWithSingleReactor(clientHandler);
+//        startWithSingleReactor(clientHandler);
 
         // 事件循环
-//        startWithNioEventLoop(clientHandler);
+        startWithNioEventLoop(clientHandler);
 
         clientHandler.listenScan();
     }

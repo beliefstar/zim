@@ -12,6 +12,8 @@ public enum CommandRequestType {
 
     REGISTER((short) 1, RegisterCommand::new),
 
+    RENAME((short) 11, RegisterCommand::new),
+
     GROUP_CHAT_MESSAGE((short) 2, GroupChatMessageCommand::new),
 
     PRIVATE_CHAT_MESSAGE((short) 3, PrivateChatMessageCommand::new),
@@ -27,6 +29,7 @@ public enum CommandRequestType {
     CommandRequestType(short code) {
         this(code, RemoteCommand::new);
     }
+
     CommandRequestType(short code, Supplier<? extends RemoteCommand> supplier) {
         this.code = code;
         this.supplier = supplier;
