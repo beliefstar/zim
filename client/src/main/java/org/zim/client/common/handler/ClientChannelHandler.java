@@ -5,11 +5,6 @@ import org.zim.common.channel.pipeline.ZimChannelHandler;
 import org.zim.common.channel.pipeline.ZimChannelPipelineContext;
 import org.zim.protocol.RemoteCommand;
 
-/**
- * @author zhenxin
- * @program 广州智灵时代研发中心
- * @date 2022/4/19 11:29
- */
 public class ClientChannelHandler implements ZimChannelHandler {
 
     private final ClientHandler clientHandler;
