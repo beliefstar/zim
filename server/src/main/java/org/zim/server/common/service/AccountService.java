@@ -41,7 +41,7 @@ public class AccountService {
         if (info == null) {
             return false;
         }
-        if (info.getZimChannel() != clientInfo.getZimChannel()) {
+        if (!info.getZimChannel().equals(clientInfo.getZimChannel())) {
             return false;
         }
         if (info.getUserName().equals(clientInfo.getUserName())) {

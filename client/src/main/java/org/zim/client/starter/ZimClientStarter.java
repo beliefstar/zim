@@ -1,8 +1,14 @@
 package org.zim.client.starter;
 
+import io.netty.bootstrap.Bootstrap;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.nio.NioSocketChannel;
 import org.zim.client.common.ChannelInit;
 import org.zim.client.common.ClientHandler;
 import org.zim.client.common.ReconnectHelper;
+import org.zim.client.netty.NettyChannelInit;
 import org.zim.client.nio.single.Reactor;
 import org.zim.common.bootstrap.ZimBootstrap;
 import org.zim.common.channel.ZimChannel;
@@ -34,7 +40,10 @@ public class ZimClientStarter {
 //        startWithSingleReactor(clientHandler);
 
         // 事件循环
-        startWithNioEventLoop(clientHandler);
+//        startWithNioEventLoop(clientHandler);
+
+        // netty
+        startWithNetty(clientHandler);
 
         clientHandler.listenScan();
     }
@@ -83,6 +92,28 @@ public class ZimClientStarter {
                 });
             } else {
                 bootstrap.close();
+            }
+        });
+    }
+
+    private static void startWithNetty(ClientHandler clientHandler) throws InterruptedException {
+        EventLoopGroup workGroup = new NioEventLoopGroup();
+        Bootstrap bootstrap = new Bootstrap();
+        bootstrap.group(workGroup)
+                .channel(NioSocketChannel.class)
+                .handler(new NettyChannelInit(clientHandler));
+
+        ChannelFuture future = bootstrap.connect(new InetSocketAddress("127.0.0.1", 7436)).sync();
+        future.channel().closeFuture().addListener(f -> {
+            if (clientHandler.isRunning()) {
+                ReconnectHelper.handleReconnect(() -> {
+                    ChannelFuture sync = bootstrap.connect(new InetSocketAddress("127.0.0.1", 7436)).sync();
+                    if (!sync.isSuccess()) {
+                        throw new RuntimeException();
+                    }
+                });
+            } else {
+                workGroup.shutdownGracefully();
             }
         });
     }

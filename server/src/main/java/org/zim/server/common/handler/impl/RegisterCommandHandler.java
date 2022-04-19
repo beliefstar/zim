@@ -81,7 +81,7 @@ public class RegisterCommandHandler extends AbstractCommandHandler {
             return RemoteCommand.createResponseCommand(CommandResponseType.REGISTER_ERROR, "unregistered");
         }
 
-        if (clientInfo.getZimChannel() != serverClientInfo.getZimChannel()) {
+        if (!clientInfo.getZimChannel().equals(serverClientInfo.getZimChannel())) {
             return RemoteCommand.createResponseCommand(CommandResponseType.REGISTER_ERROR, "client error");
         }
 
