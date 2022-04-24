@@ -2,6 +2,7 @@ package org.zim.common.channel.pipeline;
 
 import lombok.extern.slf4j.Slf4j;
 import org.zim.common.channel.ZimChannel;
+import org.zim.common.reactor.EventLoop;
 
 import java.util.concurrent.Executor;
 
@@ -37,11 +38,26 @@ public class ZimChannelPipelineContext {
         this.name = name;
     }
 
-    public void fireRead(Object command) {
+    private Executor executor() {
         if (executor != null) {
-            executor.execute(() -> next.invokeRead(command));
-        } else {
+            return executor;
+        }
+        return channel().eventLoop();
+    }
+
+    private boolean inEventLoop() {
+        Executor executor = executor();
+        if (executor instanceof EventLoop) {
+            return ((EventLoop) executor).inEventLoop();
+        }
+        return false;
+    }
+
+    public void fireRead(Object command) {
+        if (inEventLoop()) {
             next.invokeRead(command);
+        } else {
+            executor().execute(() -> next.invokeRead(command));
         }
     }
 
@@ -60,10 +76,10 @@ public class ZimChannelPipelineContext {
     }
 
     public void fireWrite(Object command) {
-        if (executor != null) {
-            executor.execute(() -> pre.invokeWrite(command));
-        } else {
+        if (inEventLoop()) {
             pre.invokeWrite(command);
+        } else {
+            executor().execute(() -> pre.invokeWrite(command));
         }
     }
 
@@ -82,10 +98,10 @@ public class ZimChannelPipelineContext {
     }
 
     public void close() {
-        if (executor != null) {
-            executor.execute(() -> pre.invokeClose());
-        } else {
+        if (inEventLoop()) {
             pre.invokeClose();
+        } else {
+            executor().execute(() -> pre.invokeClose());
         }
     }
 
@@ -104,10 +120,10 @@ public class ZimChannelPipelineContext {
     }
 
     public void fireRegister() {
-        if (executor != null) {
-            executor.execute(() -> next.invokeRegister());
-        } else {
+        if (inEventLoop()) {
             next.invokeRegister();
+        } else {
+            executor().execute(() -> next.invokeRegister());
         }
     }
 
@@ -126,10 +142,10 @@ public class ZimChannelPipelineContext {
     }
 
     public void fireActive() {
-        if (executor != null) {
-            executor.execute(() -> next.invokeActive());
-        } else {
+        if (inEventLoop()) {
             next.invokeActive();
+        } else {
+            executor().execute(() -> next.invokeActive());
         }
     }
 
@@ -148,10 +164,10 @@ public class ZimChannelPipelineContext {
     }
 
     public void fireExceptionCaught(Throwable e) {
-        if (executor != null) {
-            executor.execute(() -> next.invokeExceptionCaught(e));
-        } else {
+        if (inEventLoop()) {
             next.invokeExceptionCaught(e);
+        } else {
+            executor().execute(() -> next.invokeExceptionCaught(e));
         }
     }
 
