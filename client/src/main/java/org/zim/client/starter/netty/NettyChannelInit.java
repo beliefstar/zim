@@ -3,7 +3,6 @@ package org.zim.client.starter.netty;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import org.zim.client.common.ClientHandler;
-import org.zim.client.netty.NettyClientHandler;
 import org.zim.protocol.netty.NettyDecoder;
 import org.zim.protocol.netty.NettyEncoder;
 
