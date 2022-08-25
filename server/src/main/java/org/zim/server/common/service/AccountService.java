@@ -3,7 +3,7 @@ package org.zim.server.common.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.zim.common.SnowFlakeGenerator;
-import org.zim.common.channel.ZimChannel;
+import org.zim.reactor.api.channel.ZimChannel;
 import org.zim.protocol.RemoteCommand;
 import org.zim.server.common.model.ServerClientInfo;
 

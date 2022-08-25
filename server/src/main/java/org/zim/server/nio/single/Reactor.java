@@ -3,7 +3,7 @@ package org.zim.server.nio.single;
 
 import org.zim.common.ActionHandler;
 import org.zim.common.EchoHelper;
-import org.zim.common.channel.pipeline.ZimChannelHandler;
+import org.zim.reactor.api.channel.pipeline.ZimChannelHandler;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;

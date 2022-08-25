@@ -3,7 +3,7 @@ package org.zim.server.common.handler.impl;
 
 import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
-import org.zim.common.channel.ZimChannel;
+import org.zim.reactor.api.channel.ZimChannel;
 import org.zim.protocol.CommandRequestType;
 import org.zim.protocol.CommandResponseType;
 import org.zim.protocol.MessageConstants;

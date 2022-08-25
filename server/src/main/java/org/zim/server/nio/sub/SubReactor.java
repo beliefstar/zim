@@ -1,8 +1,10 @@
 package org.zim.server.nio.sub;
 
-import org.zim.common.channel.ZimChannel;
-import org.zim.common.channel.ZimChannelFuture;
-import org.zim.common.reactor.EventLoopAdapter;
+
+import org.zim.reactor.api.channel.ZimChannel;
+import org.zim.reactor.api.channel.ZimChannelFuture;
+import org.zim.reactor.api.eventloop.EventLoopAdapter;
+import org.zim.reactor.channel.DefaultZimChannelFuture;
 
 import java.io.IOException;
 import java.nio.channels.SelectionKey;
@@ -82,7 +84,7 @@ public class SubReactor implements Runnable {
         while (!registerQueue.isEmpty()) {
             ZimChannel channel = registerQueue.poll();
 
-            ZimChannelFuture future = new ZimChannelFuture(channel);
+            ZimChannelFuture future = new DefaultZimChannelFuture(channel);
 
             channel.register(new EventLoopAdapter() {
                 @Override

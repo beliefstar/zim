@@ -1,7 +1,7 @@
 package org.zim.server.nio.single;
 
 import org.zim.common.ActionHandler;
-import org.zim.common.channel.ZimChannel;
+import org.zim.reactor.api.channel.ZimChannel;
 
 import java.io.IOException;
 import java.nio.channels.SelectionKey;

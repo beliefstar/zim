@@ -3,8 +3,8 @@ package org.zim.server.common.model;
 import com.alibaba.fastjson.annotation.JSONField;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.zim.common.channel.ZimChannel;
 import org.zim.common.model.ClientInfo;
+import org.zim.reactor.api.channel.ZimChannel;
 
 @EqualsAndHashCode(callSuper = true)
 @Data

@@ -6,9 +6,9 @@ import org.zim.client.common.message.MessageConsumer;
 import org.zim.client.common.scan.ConsoleScanner;
 import org.zim.client.common.scan.pipeline.RegisterHandler;
 import org.zim.common.EchoHelper;
-import org.zim.common.channel.ZimChannel;
-import org.zim.common.channel.ZimChannelFuture;
-import org.zim.common.channel.pipeline.ZimChannelHandler;
+import org.zim.reactor.api.channel.ZimChannel;
+import org.zim.reactor.api.channel.ZimChannelFuture;
+import org.zim.reactor.api.channel.pipeline.ZimChannelHandler;
 import org.zim.common.model.ClientInfo;
 
 import java.util.List;
@@ -91,11 +91,9 @@ public class ClientHandler implements ZimChannelHandler {
     }
 
     public void updateOnlineUser(List<ClientInfo> list) {
-        Map<String, ClientInfo> map = new ConcurrentHashMap<>();
         for (ClientInfo info : list) {
-            map.put(info.getUserName(), info);
+            onlineClientInfoMap.put(info.getUserName(), info);
         }
-        onlineClientInfoMap = map;
     }
 
     public Long getUserId() {

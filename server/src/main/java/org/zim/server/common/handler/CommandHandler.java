@@ -1,8 +1,8 @@
 package org.zim.server.common.handler;
 
 
-import org.zim.common.channel.ZimChannel;
 import org.zim.protocol.RemoteCommand;
+import org.zim.reactor.api.channel.ZimChannel;
 
 public interface CommandHandler {
 

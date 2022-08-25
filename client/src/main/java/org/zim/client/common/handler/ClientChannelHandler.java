@@ -1,9 +1,9 @@
 package org.zim.client.common.handler;
 
 import org.zim.client.common.ClientHandler;
-import org.zim.common.channel.pipeline.ZimChannelHandler;
-import org.zim.common.channel.pipeline.ZimChannelPipelineContext;
 import org.zim.protocol.RemoteCommand;
+import org.zim.reactor.api.channel.pipeline.ZimChannelHandler;
+import org.zim.reactor.api.channel.pipeline.ZimChannelPipelineContext;
 
 public class ClientChannelHandler implements ZimChannelHandler {
 

@@ -1,10 +1,10 @@
 package org.zim.server.common;
 
 
-import org.zim.common.channel.ZimChannel;
 import org.zim.protocol.CommandRequestType;
 import org.zim.protocol.CommandResponseType;
 import org.zim.protocol.RemoteCommand;
+import org.zim.reactor.api.channel.ZimChannel;
 import org.zim.server.common.handler.CommandHandler;
 import org.zim.server.common.handler.impl.*;
 import org.zim.server.common.service.AccountService;

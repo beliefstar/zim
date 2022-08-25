@@ -1,7 +1,7 @@
 package org.zim.server.common.handler.impl;
 
 import com.alibaba.fastjson.JSON;
-import org.zim.common.channel.ZimChannel;
+import org.zim.reactor.api.channel.ZimChannel;
 import org.zim.protocol.CommandResponseType;
 import org.zim.protocol.RemoteCommand;
 import org.zim.protocol.command.RegisterCommand;

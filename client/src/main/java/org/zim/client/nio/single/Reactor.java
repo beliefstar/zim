@@ -1,11 +1,12 @@
 package org.zim.client.nio.single;
 
 import org.zim.common.EchoHelper;
-import org.zim.common.channel.ZimChannel;
-import org.zim.common.channel.ZimChannelFuture;
-import org.zim.common.channel.impl.ZimNioChannel;
-import org.zim.common.channel.pipeline.ZimChannelHandler;
-import org.zim.common.reactor.EventLoopAdapter;
+import org.zim.reactor.api.channel.ZimChannel;
+import org.zim.reactor.api.channel.ZimChannelFuture;
+import org.zim.reactor.api.channel.pipeline.ZimChannelHandler;
+import org.zim.reactor.api.eventloop.EventLoopAdapter;
+import org.zim.reactor.channel.DefaultZimChannelFuture;
+import org.zim.reactor.channel.impl.ZimNioChannel;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -110,7 +111,7 @@ public class Reactor {
         while (!registerQueue.isEmpty()) {
             ZimChannel channel = registerQueue.poll();
 
-            ZimChannelFuture future = new ZimChannelFuture(channel);
+            ZimChannelFuture future = new DefaultZimChannelFuture(channel);
 
             channel.register(new EventLoopAdapter() {
                 @Override

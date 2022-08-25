@@ -2,8 +2,8 @@ package org.zim.server.nio.sub;
 
 
 import lombok.extern.slf4j.Slf4j;
-import org.zim.common.channel.impl.ZimNioChannel;
-import org.zim.common.channel.pipeline.ZimChannelHandler;
+import org.zim.reactor.api.channel.pipeline.ZimChannelHandler;
+import org.zim.reactor.channel.impl.ZimNioChannel;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;

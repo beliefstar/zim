@@ -9,12 +9,12 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import org.zim.common.EchoHelper;
-import org.zim.common.bootstrap.ZimServerBootstrap;
-import org.zim.common.channel.ZimChannelFuture;
-import org.zim.common.channel.impl.ZimNioServerChannel;
-import org.zim.common.reactor.ReactorEventLoopGroup;
-import org.zim.server.common.ChannelInit;
-import org.zim.server.netty.NettyChannelInit;
+import org.zim.reactor.bootstrap.ZimServerBootstrap;
+import org.zim.reactor.channel.DefaultZimChannelFuture;
+import org.zim.reactor.channel.impl.ZimNioServerChannel;
+import org.zim.reactor.eventloop.ReactorEventLoopGroup;
+import org.zim.server.starter.netty.NettyChannelInit;
+import org.zim.server.starter.reactor.ChannelInit;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.ThreadFactory;
@@ -45,10 +45,10 @@ public class ZimServerStarter {
 //        new MasterReactor("127.0.0.1", 7436, 5, new ChannelInit(true), threadFactory).start();
 
         // 主从事件循环
-//        startWithEventLoop();
+        startWithEventLoop();
 
         // Netty 版本
-        startWithNetty();
+//        startWithNetty();
     }
 
     public static void startWithEventLoop() {
@@ -62,7 +62,7 @@ public class ZimServerStarter {
                 .childHandler(new ChannelInit(true));
 
         try {
-            ZimChannelFuture future = serverBootstrap.bind().sync();
+            DefaultZimChannelFuture future = serverBootstrap.bind().sync();
             if (future.isSuccess()) {
                 EchoHelper.print("zim server: waiting accept...");
             }

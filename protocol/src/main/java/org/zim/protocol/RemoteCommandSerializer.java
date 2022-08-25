@@ -1,8 +1,8 @@
 package org.zim.protocol;
 
 import lombok.extern.slf4j.Slf4j;
-import org.zim.common.channel.pipeline.ZimChannelHandler;
-import org.zim.common.channel.pipeline.ZimChannelPipelineContext;
+import org.zim.reactor.api.channel.pipeline.ZimChannelHandler;
+import org.zim.reactor.api.channel.pipeline.ZimChannelPipelineContext;
 
 import java.nio.ByteBuffer;
 

@@ -5,16 +5,16 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import org.zim.client.common.ChannelInit;
 import org.zim.client.common.ClientHandler;
 import org.zim.client.common.ReconnectHelper;
-import org.zim.client.netty.NettyChannelInit;
 import org.zim.client.nio.single.Reactor;
-import org.zim.common.bootstrap.ZimBootstrap;
-import org.zim.common.channel.ZimChannel;
-import org.zim.common.channel.ZimChannelFuture;
-import org.zim.common.channel.impl.ZimNioChannel;
-import org.zim.common.reactor.ReactorEventLoopGroup;
+import org.zim.client.starter.netty.NettyChannelInit;
+import org.zim.client.starter.reactor.ChannelInit;
+import org.zim.reactor.api.channel.ZimChannel;
+import org.zim.reactor.api.channel.ZimChannelFuture;
+import org.zim.reactor.bootstrap.ZimBootstrap;
+import org.zim.reactor.channel.impl.ZimNioChannel;
+import org.zim.reactor.eventloop.ReactorEventLoopGroup;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.ThreadFactory;
@@ -40,10 +40,10 @@ public class ZimClientStarter {
 //        startWithSingleReactor(clientHandler);
 
         // 事件循环
-//        startWithNioEventLoop(clientHandler);
+        startWithNioEventLoop(clientHandler);
 
         // netty
-        startWithNetty(clientHandler);
+//        startWithNetty(clientHandler);
 
         clientHandler.listenScan();
     }

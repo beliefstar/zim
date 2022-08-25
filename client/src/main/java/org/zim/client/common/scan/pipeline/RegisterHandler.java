@@ -100,7 +100,7 @@ public class RegisterHandler implements ScanHandler, MessageHandler {
                 EchoHelper.printSystem("user [{}] offline", userName);
                 break;
             }
-            default:{
+            default: {
                 markUnRegistered();
                 EchoHelper.printSystem(response.getBodyString());
             }

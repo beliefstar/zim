@@ -2,12 +2,15 @@ package org.zim.server.nio.single;
 
 import lombok.extern.slf4j.Slf4j;
 import org.zim.common.ActionHandler;
-import org.zim.common.channel.ZimChannel;
-import org.zim.common.channel.impl.ZimNioChannel;
-import org.zim.common.channel.pipeline.ZimChannelHandler;
+import org.zim.reactor.api.channel.ZimChannel;
+import org.zim.reactor.api.channel.pipeline.ZimChannelHandler;
+import org.zim.reactor.api.eventloop.EventLoopAdapter;
+import org.zim.reactor.channel.DefaultZimChannelFuture;
+import org.zim.reactor.channel.impl.ZimNioChannel;
 
 import java.io.IOException;
 import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 
@@ -35,8 +38,21 @@ public class Acceptor implements ActionHandler {
 
                 zimChannel.pipeline().addLast(channelHandler);
 
-                channel.register(key.selector(), SelectionKey.OP_READ | SelectionKey.OP_WRITE, actionHandler);
-                zimChannel.pipeline().fireRegister();
+                DefaultZimChannelFuture future = new DefaultZimChannelFuture(zimChannel);
+                zimChannel.register(new EventLoopAdapter() {
+                    @Override
+                    public Selector selector() {
+                        return key.selector();
+                    }
+                }, future);
+
+                future.addListener(f -> {
+                    if (f.isSuccess()) {
+                        f.channel().selectionKey().attach(actionHandler);
+                    }
+                });
+//                channel.register(key.selector(), SelectionKey.OP_READ | SelectionKey.OP_WRITE, actionHandler);
+//                zimChannel.pipeline().fireRegister();
             }
         }
     }
