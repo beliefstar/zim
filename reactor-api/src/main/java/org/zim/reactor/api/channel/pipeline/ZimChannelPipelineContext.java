@@ -4,9 +4,9 @@ import org.zim.reactor.api.channel.ZimChannel;
 
 public interface ZimChannelPipelineContext {
 
-    void fireRead(Object command);
+    void fireRead(Object msg);
 
-    void fireWrite(Object command);
+    void fireWrite(Object msg);
 
     void close();
 

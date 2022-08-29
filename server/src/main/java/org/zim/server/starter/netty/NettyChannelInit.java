@@ -41,6 +41,16 @@ public class NettyChannelInit extends ChannelInitializer<NioSocketChannel> {
                 new NettyDecoder(),
                 new NettyEncoder(),
                 new NettyServerHandler());
+
+//        ch.pipeline()
+//                .addLast(new ProtobufVarint32FrameDecoder())
+//                .addLast(new ProtobufDecoder(RemoteCommandProtocol.getDefaultInstance()))
+//                //
+//                .addLast(new ProtobufVarint32LengthFieldPrepender())
+//                .addLast(new ProtobufEncoder())
+//
+//                .addLast(executor, new ProtoBufConvertCodec())
+//                .addLast(executor, new NettyServerHandler());
     }
 
     private static class NettyServerHandler extends SimpleChannelInboundHandler<RemoteCommand> {

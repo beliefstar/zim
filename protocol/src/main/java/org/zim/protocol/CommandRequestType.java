@@ -5,18 +5,16 @@ import org.zim.protocol.command.GroupChatMessageCommand;
 import org.zim.protocol.command.PrivateChatMessageCommand;
 import org.zim.protocol.command.RegisterCommand;
 
-import java.util.function.Supplier;
-
 @Getter
 public enum CommandRequestType {
 
-    REGISTER((short) 1, RegisterCommand::new),
+    REGISTER((short) 1, RegisterCommand.class),
 
-    RENAME((short) 11, RegisterCommand::new),
+    RENAME((short) 11, RegisterCommand.class),
 
-    GROUP_CHAT_MESSAGE((short) 2, GroupChatMessageCommand::new),
+    GROUP_CHAT_MESSAGE((short) 2, GroupChatMessageCommand.class),
 
-    PRIVATE_CHAT_MESSAGE((short) 3, PrivateChatMessageCommand::new),
+    PRIVATE_CHAT_MESSAGE((short) 3, PrivateChatMessageCommand.class),
 
     QUERY_ALL_USER((short) 4),
 
@@ -24,15 +22,15 @@ public enum CommandRequestType {
     ;
 
     private final short code;
-    private final Supplier<? extends RemoteCommand> supplier;
+    private final Class<? extends RemoteCommand> type;
 
     CommandRequestType(short code) {
-        this(code, RemoteCommand::new);
+        this(code, RemoteCommand.class);
     }
 
-    CommandRequestType(short code, Supplier<? extends RemoteCommand> supplier) {
+    CommandRequestType(short code, Class<? extends RemoteCommand> type) {
         this.code = code;
-        this.supplier = supplier;
+        this.type = type;
     }
 
     public static CommandRequestType valueOf(short b) {

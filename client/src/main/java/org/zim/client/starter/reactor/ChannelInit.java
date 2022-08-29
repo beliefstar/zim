@@ -2,7 +2,8 @@ package org.zim.client.starter.reactor;
 
 import org.zim.client.common.ClientHandler;
 import org.zim.client.common.handler.ClientChannelHandler;
-import org.zim.protocol.RemoteCommandSerializer;
+import org.zim.protocol.codec.LengthByteFrameDecoder;
+import org.zim.protocol.codec.RemoteCommandCodec;
 import org.zim.reactor.api.channel.ZimChannel;
 import org.zim.reactor.api.channel.pipeline.ZimChannelPipeline;
 import org.zim.reactor.channel.ZimChannelInitializer;
@@ -26,7 +27,9 @@ public class ChannelInit extends ZimChannelInitializer {
         ZimChannelPipeline pipeline = channel.pipeline();
         Executor executor = useParallel ? clientHandler.getExecutor() : null;
         pipeline.addLast(executor,
-                new RemoteCommandSerializer(),
+                // 粘包拆包处理
+                new LengthByteFrameDecoder(),
+                new RemoteCommandCodec(),
                 new ClientChannelHandler(clientHandler));
     }
 

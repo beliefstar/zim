@@ -186,10 +186,11 @@ public class ZimNioChannel extends AbstractZimChannel {
                 if (read > 0) {
                     buffer.flip();
 
-                    try {
-                        handleRead(buffer);
-                    } catch (UnCompleteException ignore) {
-                    }
+//                    try {
+//                        handleRead(buffer);
+//                    } catch (UnCompleteException ignore) {
+//                    }
+                    pipeline().fireRead(buffer);
                 } else {
                     close = true;
                 }

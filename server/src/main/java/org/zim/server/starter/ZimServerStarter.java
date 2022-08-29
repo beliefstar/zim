@@ -45,10 +45,10 @@ public class ZimServerStarter {
 //        new MasterReactor("127.0.0.1", 7436, 5, new ChannelInit(true), threadFactory).start();
 
         // 主从事件循环
-        startWithEventLoop();
+//        startWithEventLoop();
 
         // Netty 版本
-//        startWithNetty();
+        startWithNetty();
     }
 
     public static void startWithEventLoop() {

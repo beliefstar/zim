@@ -56,47 +56,47 @@ public class DefaultZimChannelPipelineContext implements ZimChannelPipelineConte
     }
 
     @Override
-    public void fireRead(Object command) {
+    public void fireRead(Object msg) {
         if (inEventLoop()) {
-            next.invokeRead(command);
+            next.invokeRead(msg);
         } else {
-            executor().execute(() -> next.invokeRead(command));
+            executor().execute(() -> next.invokeRead(msg));
         }
     }
 
-    public void invokeRead(Object command) {
+    public void invokeRead(Object msg) {
         if (handler() != null) {
             try {
-                handler().handleRead(this, command);
+                handler().handleRead(this, msg);
             } catch (Exception e) {
                 invokeExceptionCaught(e);
             }
         } else {
             if (next != null) {
-                next.invokeRead(command);
+                next.invokeRead(msg);
             }
         }
     }
 
     @Override
-    public void fireWrite(Object command) {
+    public void fireWrite(Object msg) {
         if (inEventLoop()) {
-            pre.invokeWrite(command);
+            pre.invokeWrite(msg);
         } else {
-            executor().execute(() -> pre.invokeWrite(command));
+            executor().execute(() -> pre.invokeWrite(msg));
         }
     }
 
-    public void invokeWrite(Object command) {
+    public void invokeWrite(Object msg) {
         if (handler() != null) {
             try {
-                handler().handleWrite(this, command);
+                handler().handleWrite(this, msg);
             } catch (Exception e) {
                 notifyHandlerException(e);
             }
         } else {
             if (pre != null) {
-                pre.invokeWrite(command);
+                pre.invokeWrite(msg);
             }
         }
     }

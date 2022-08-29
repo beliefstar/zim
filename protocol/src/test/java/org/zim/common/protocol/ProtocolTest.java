@@ -21,10 +21,11 @@ public class ProtocolTest {
         System.out.println(command);
 
         ByteBuffer bytes = ByteBuffer.wrap(command.encode());
-        bytes.getInt();
-        RemoteCommand decode = RemoteCommand.decode(bytes);
+        RemoteCommand decode = RemoteCommand.decode(bytes.array());
+        RemoteCommand decode2 = RemoteCommand.decode(bytes);
 
         Assert.assertEquals(command.toString(), decode.toString());
+        Assert.assertEquals(command.toString(), decode2.toString());
         System.out.println(decode);
     }
 
@@ -35,10 +36,11 @@ public class ProtocolTest {
         System.out.println(gcm);
 
         ByteBuffer bytes = ByteBuffer.wrap(gcm.encode());
-        bytes.getInt();
         RemoteCommand decode = RemoteCommand.decode(bytes);
+        RemoteCommand decode2 = RemoteCommand.decode(bytes.array());
 
         Assert.assertEquals(gcm.toString(), decode.toString());
+        Assert.assertEquals(gcm.toString(), decode2.toString());
         System.out.println(decode);
     }
 
@@ -52,10 +54,11 @@ public class ProtocolTest {
 
 
         ByteBuffer bytes = ByteBuffer.wrap(pcm.encode());
-        bytes.getInt();
         RemoteCommand decode = RemoteCommand.decode(bytes);
+        RemoteCommand decode2 = RemoteCommand.decode(bytes.array());
 
         Assert.assertEquals(pcm.toString(), decode.toString());
+        Assert.assertEquals(pcm.toString(), decode2.toString());
         System.out.println(decode);
     }
 
@@ -66,10 +69,11 @@ public class ProtocolTest {
         System.out.println(pcm);
 
         ByteBuffer bytes = ByteBuffer.wrap(pcm.encode());
-        bytes.getInt();
         RemoteCommand decode = RemoteCommand.decode(bytes);
+        RemoteCommand decode2 = RemoteCommand.decode(bytes.array());
 
         Assert.assertEquals(pcm.toString(), decode.toString());
+        Assert.assertEquals(pcm.toString(), decode2.toString());
         System.out.println(decode);
 
 
@@ -77,10 +81,11 @@ public class ProtocolTest {
         System.out.println(pcm);
 
         bytes = ByteBuffer.wrap(pcm.encode());
-        bytes.getInt();
         decode = RemoteCommand.decode(bytes);
+        decode2 = RemoteCommand.decode(bytes.array());
 
         Assert.assertEquals(pcm.toString(), decode.toString());
+        Assert.assertEquals(pcm.toString(), decode2.toString());
         System.out.println(decode);
     }
 }

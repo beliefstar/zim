@@ -40,10 +40,10 @@ public class ZimClientStarter {
 //        startWithSingleReactor(clientHandler);
 
         // 事件循环
-        startWithNioEventLoop(clientHandler);
+//        startWithNioEventLoop(clientHandler);
 
         // netty
-//        startWithNetty(clientHandler);
+        startWithNetty(clientHandler);
 
         clientHandler.listenScan();
     }
@@ -102,6 +102,7 @@ public class ZimClientStarter {
         bootstrap.group(workGroup)
                 .channel(NioSocketChannel.class)
                 .handler(new NettyChannelInit(clientHandler));
+//                .handler(new NettyChannelProtoBufInit(clientHandler));
 
         ChannelFuture future = bootstrap.connect(new InetSocketAddress("127.0.0.1", 7436)).sync();
         future.channel().closeFuture().addListener(f -> {
